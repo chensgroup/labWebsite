@@ -1,0 +1,2476 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>斜拋運動砲台命中挑戰</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', 'Noto Sans TC', 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
+      background: #f4f7fb;
+      color: #1f2937;
+    }
+    header {
+      padding: 20px 28px;
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      color: white;
+    }
+    header h1 { margin: 0 0 8px; font-size: 28px; }
+    header p { margin: 0; line-height: 1.6; opacity: .95; }
+    main {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      align-items: start;
+      gap: 18px;
+      padding: 18px;
+    }
+    .panel, .canvas-wrap, .teaching {
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, .08);
+      padding: 18px;
+    }
+    .panel h2, .teaching h2 { margin-top: 0; font-size: 20px; }
+    .control { margin-bottom: 18px; }
+    .control label {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    input[type="range"] { width: 100%; }
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 14px;
+      padding: 13px 16px;
+      margin-top: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .fire { background: #ef4444; color: white; }
+    .reset { background: #e5e7eb; color: #111827; }
+    .hint {
+      font-size: 14px;
+      line-height: 1.6;
+      background: #eff6ff;
+      border-left: 5px solid #2563eb;
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin-top: 14px;
+    }
+    canvas {
+      width: 100%;
+      height: 480px;
+      background: linear-gradient(#dbeafe 0%, #eff6ff 65%, #dcfce7 65%, #bbf7d0 100%);
+      border-radius: 16px;
+      display: block;
+      cursor: crosshair;
+    }
+    .status {
+      margin-top: 12px;
+      font-size: 18px;
+      font-weight: 800;
+      color: #1e3a8a;
+    }
+    .data {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(190px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+      align-items: stretch;
+    }
+    .canvas-data {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+    }
+    .data-group {
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: #f8fafc;
+      min-height: 150px;
+    }
+    .data-group h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      color: #1e3a8a;
+      border-bottom: 2px solid #bfdbfe;
+      padding-bottom: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .title-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .vector-toggle {
+      font-size: 12px;
+      color: #475569;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .vector-toggle-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: #334155;
+      font-weight: 700;
+    }
+    .vector-toggle-group label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .group-cards {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .card {
+      background: transparent;
+      border: 0;
+      border-bottom: 1px solid #e5e7eb;
+      border-radius: 0;
+      padding: 9px 0;
+      min-height: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .card:last-child { border-bottom: 0; }
+    .card small {
+      display: block;
+      color: #475569;
+      font-size: 14px;
+      line-height: 1.2;
+      margin-bottom: 0;
+      white-space: nowrap;
+    }
+    .card small sub { font-size: 0.75em; }
+    .card strong {
+      font-weight: 800;
+      font-size: 17px;
+      line-height: 1.2;
+      text-align: right;
+      white-space: nowrap;
+      min-width: 90px;
+    }
+    .vx { color:#16a34a; }   /* 綠：水平速度 */
+    .vy { color:#9333ea; }   /* 紫：鉛直速度 */
+    .vt { color:#2563eb; }   /* 藍：切線速度 */
+    .g  { color:#dc2626; }   /* 紅：重力加速度 */
+    .at { color:#f97316; }   /* 橘：切線加速度 */
+    .an { color:#eab308; }   /* 黃：法線加速度 */
+    .teaching {
+      grid-column: 1 / -1;
+      line-height: 1.8;
+    }
+    .formula {
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      padding: 12px;
+      border-radius: 12px;
+      overflow-x: auto;
+    }
+    @media (max-width: 900px) {
+      main { grid-template-columns: 1fr; }
+      canvas { height: 430px; }
+      .data { grid-template-columns: 1fr; }
+    }
+
+    .mode-card {
+      margin-top: 16px;
+      padding: 14px;
+      border: 1px solid #bfdbfe;
+      background: #f8fbff;
+      border-radius: 14px;
+    }
+    .mode-card h3 { margin: 0 0 10px; color: #1e3a8a; font-size: 18px; }
+    .mode-card label { font-weight: 700; display: block; margin: 8px 0 4px; }
+    .mode-card input[type="number"], .mode-card input[type="text"], .mode-card textarea {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 15px;
+      background: white;
+    }
+    .mode-card textarea { min-height: 80px; resize: vertical; line-height: 1.6; }
+    .target-setting {
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid #dbeafe;
+      border-radius: 14px;
+      background: #ffffff;
+    }
+    .target-setting-title {
+      font-weight: 900;
+      color: #1e3a8a;
+      margin-bottom: 8px;
+    }
+    .target-setting .small-row { margin-bottom: 8px; }
+    .target-setting small {
+      display: block;
+      color: #64748b;
+      line-height: 1.5;
+      margin-top: 6px;
+    }
+    .small-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .task-box {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(430px, 92vw);
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 30;
+      background: white;
+      border-radius: 18px 0 0 18px;
+      box-shadow: -12px 0 30px rgba(15, 23, 42, .18);
+      padding: 18px;
+      line-height: 1.7;
+      border-left: 3px solid #2563eb;
+      transform: translateX(105%);
+      transition: transform .25s ease;
+    }
+    .task-box.open { transform: translateX(0); }
+    .drawer-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, .28);
+      z-index: 25;
+    }
+    .drawer-backdrop.open { display: block; }
+    .drawer-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .drawer-head h2 { margin: 0; color: #1e3a8a; }
+    .drawer-close {
+      width: auto;
+      min-width: 44px;
+      padding: 8px 12px;
+      margin: 0;
+      border-radius: 999px;
+      background: #e5e7eb;
+      color: #111827;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .drawer-tab {
+      position: fixed;
+      right: 0;
+      top: 170px;
+      z-index: 24;
+      width: auto;
+      writing-mode: vertical-rl;
+      letter-spacing: 2px;
+      border-radius: 14px 0 0 14px;
+      padding: 14px 10px;
+      margin: 0;
+      background: #2563eb;
+      color: white;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, .18);
+    }
+    .task-box h2 { margin: 0 0 8px; color: #1e3a8a; }
+    .task-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(130px, 1fr));
+      gap: 10px;
+      margin: 12px 0;
+    }
+    .task-pill {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-weight: 700;
+    }
+    .worksheet-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .worksheet-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 12px;
+      background: #f8fafc;
+    }
+    .worksheet-card h3 { margin: 0 0 8px; color: #1e3a8a; }
+    .worksheet-card textarea, .worksheet-card input {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 8px;
+      margin: 4px 0 8px;
+      font-size: 14px;
+    }
+    .success-msg { color: #16a34a; font-weight: 800; }
+    .warn-msg { color: #dc2626; font-weight: 800; }
+    .print-only { display: none; }
+    @media (max-width: 900px) {
+      .task-meta, .worksheet-grid { grid-template-columns: 1fr; }
+    }
+
+    .question-block{
+      margin: 12px 0;
+      padding: 12px;
+      border: 1px solid #dbeafe;
+      border-radius: 12px;
+      background: #f8fbff;
+    }
+    .question-block p{
+      margin: 0 0 10px 0;
+      line-height: 1.6;
+      font-weight: 800;
+      color: #1e3a8a;
+    }
+    .radio-options{
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .radio-option{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 999px;
+      background: white;
+      cursor: pointer;
+      font-weight: 800;
+    }
+    .radio-option input{
+      width: auto !important;
+      margin: 0 !important;
+    }
+    .answer-note{
+      margin: 8px 0 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #ecfdf5;
+      border-left: 4px solid #16a34a;
+      color: #166534;
+      font-weight: 700;
+      line-height: 1.6;
+    }
+    .task-target-buttons{
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin: 10px 0;
+    }
+    .task-target-buttons button{
+      width: 100%;
+      margin: 0;
+      background: #e5e7eb;
+      color: #111827;
+      text-align: left;
+    }
+    .task-target-buttons button.active{
+      background: #2563eb;
+      color: white;
+    }
+
+    .mode-card button.mode-active {
+      background: #2563eb;
+      color: white;
+      box-shadow: 0 6px 14px rgba(37, 99, 235, .24);
+    }
+    .mode-card button.mode-active:hover { background: #1d4ed8; }
+    .radio-option input { accent-color: #2563eb; }
+    .radio-option:has(input:checked) {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+      box-shadow: 0 5px 12px rgba(37, 99, 235, .20);
+    }
+
+
+
+    /* ===== 寬螢幕版面優化：左任務、左中控制、中畫布、右數據 ===== */
+    main {
+      grid-template-columns: 250px 280px minmax(720px, 1fr);
+      max-width: 1780px;
+      margin: 0 auto;
+    }
+    .mode-card.inquiry-side {
+      margin-top: 0;
+      padding: 18px;
+      background: white;
+      border: 1px solid #bfdbfe;
+      border-radius: 18px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, .08);
+      position: sticky;
+      top: 14px;
+    }
+    .target-setting {
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid #bfdbfe;
+      border-radius: 14px;
+      background: #f8fbff;
+    }
+    .canvas-wrap {
+      display: grid;
+      grid-template-columns: minmax(560px, 1fr) 320px;
+      grid-template-rows: auto auto;
+      gap: 14px;
+      align-items: start;
+    }
+    .canvas-wrap canvas {
+      grid-column: 1;
+      grid-row: 1;
+      height: 520px;
+    }
+    .canvas-wrap .status {
+      grid-column: 1;
+      grid-row: 2;
+      margin-top: 0;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-size: 17px;
+    }
+    .canvas-data {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      margin-top: 0;
+      padding-top: 0;
+      border-top: 0;
+    }
+    .data {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 0;
+    }
+    .data-group {
+      min-height: auto;
+      padding: 11px 13px;
+    }
+    .data-group h3 {
+      font-size: 17px;
+      margin-bottom: 8px;
+    }
+    .card {
+      padding: 7px 0;
+    }
+    .card strong {
+      font-size: 16px;
+      min-width: 82px;
+    }
+
+    @media (max-width: 1350px) {
+      main {
+        grid-template-columns: 260px minmax(0, 1fr);
+        max-width: none;
+      }
+      .mode-card.inquiry-side {
+        grid-column: 1 / -1;
+        position: static;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        align-items: start;
+      }
+      .mode-card.inquiry-side h3,
+      .mode-card.inquiry-side .hint,
+      .mode-card.inquiry-side label { grid-column: 1 / -1; }
+      .canvas-wrap {
+        grid-template-columns: 1fr;
+      }
+      .canvas-wrap canvas,
+      .canvas-wrap .status,
+      .canvas-data {
+        grid-column: 1;
+        grid-row: auto;
+      }
+      .canvas-data {
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid #e5e7eb;
+      }
+      .data {
+        grid-template-columns: repeat(2, minmax(230px, 1fr));
+      }
+    }
+
+
+    @media (max-width: 900px) {
+      main { grid-template-columns: 1fr; }
+      .canvas-wrap canvas { height: 430px; }
+      .data { grid-template-columns: 1fr; }
+    }
+
+
+
+    /* ===== 本版排版：左側操作、中間畫布、右側數據；探究任務橫向放在畫布下方 ===== */
+    main {
+      grid-template-columns: 280px minmax(820px, 1fr);
+      max-width: 1500px;
+      margin: 0 auto;
+      gap: 14px;
+    }
+    .panel {
+      position: sticky;
+      top: 12px;
+    }
+    .canvas-wrap {
+      display: grid;
+      grid-template-columns: minmax(560px, 1fr) 300px;
+      grid-template-rows: auto auto auto;
+      gap: 12px;
+      align-items: start;
+      padding: 14px;
+    }
+    .canvas-wrap canvas {
+      grid-column: 1;
+      grid-row: 1;
+      height: 480px;
+    }
+    .canvas-wrap .status {
+      grid-column: 1;
+      grid-row: 2;
+      margin-top: 0;
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 9px 13px;
+      font-size: 16px;
+    }
+    .mode-card.inquiry-strip {
+      grid-column: 1;
+      grid-row: 3;
+      margin-top: 0;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 1.2fr repeat(3, minmax(120px, 1fr));
+      gap: 10px;
+      align-items: center;
+      background: #f8fbff;
+      border: 1px solid #bfdbfe;
+      border-radius: 14px;
+      box-shadow: none;
+    }
+    .mode-card.inquiry-strip h3 {
+      margin: 0;
+      font-size: 17px;
+      color: #1e3a8a;
+      white-space: nowrap;
+    }
+    .mode-card.inquiry-strip button {
+      margin-top: 0;
+      padding: 11px 12px;
+      font-size: 14px;
+    }
+    .mode-card.inquiry-strip label {
+      grid-column: 1 / -1;
+      margin: 0;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .mode-card.inquiry-strip .hint {
+      grid-column: 1 / -1;
+      margin-top: 0;
+      padding: 8px 10px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .canvas-data {
+      grid-column: 2;
+      grid-row: 1 / span 3;
+      margin-top: 0;
+      padding-top: 0;
+      border-top: 0;
+    }
+    .data {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 0;
+    }
+    .data-group {
+      min-height: auto;
+      padding: 10px 12px;
+    }
+    .data-group h3 {
+      font-size: 16px;
+      margin-bottom: 7px;
+    }
+    .card {
+      padding: 6px 0;
+    }
+    .card small { font-size: 13px; }
+    .card strong {
+      font-size: 15px;
+      min-width: 78px;
+    }
+    .target-setting {
+      margin-top: 12px;
+      padding: 11px;
+    }
+    .target-setting .small-row {
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .target-setting input {
+      width: 100%;
+      min-width: 0;
+    }
+
+    @media (max-width: 1260px) {
+      main {
+        grid-template-columns: 260px minmax(0, 1fr);
+        max-width: none;
+      }
+      .canvas-wrap {
+        grid-template-columns: 1fr;
+      }
+      .canvas-wrap canvas,
+      .canvas-wrap .status,
+      .mode-card.inquiry-strip,
+      .canvas-data {
+        grid-column: 1;
+        grid-row: auto;
+      }
+      .canvas-data {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #e5e7eb;
+      }
+      .data { grid-template-columns: repeat(2, minmax(220px, 1fr)); }
+      .mode-card.inquiry-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .mode-card.inquiry-strip h3,
+      .mode-card.inquiry-strip label,
+      .mode-card.inquiry-strip .hint { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 900px) {
+      main { grid-template-columns: 1fr; }
+      .panel { position: static; }
+      .canvas-wrap canvas { height: 430px; }
+      .data { grid-template-columns: 1fr; }
+      .mode-card.inquiry-strip { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+      #printSheet, #printSheet * { visibility: visible; }
+      #printSheet {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 24px;
+        color: #111827;
+        font-family: 'Noto Sans TC', 'Microsoft JhengHei', Arial, sans-serif;
+      }
+      #printSheet h1 { font-size: 24px; }
+      #printSheet h2 { font-size: 18px; margin-top: 22px; border-bottom: 1px solid #999; padding-bottom: 4px; }
+      #printSheet p { line-height: 1.7; }
+      #printSheet table { width: 100%; border-collapse: collapse; margin: 8px 0 14px; }
+      #printSheet td, #printSheet th { border: 1px solid #888; padding: 7px; vertical-align: top; }
+    }
+
+  
+
+    /* ===== 介面優化版：讓中間砲台畫面更大、控制欄更精簡 ===== */
+    header {
+      padding: 12px 22px;
+    }
+    header h1 {
+      font-size: 22px;
+      margin-bottom: 4px;
+      line-height: 1.25;
+    }
+    header p {
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    main {
+      grid-template-columns: 260px minmax(760px, 1fr);
+      gap: 12px;
+      padding: 12px;
+      align-items: start;
+      max-width: 1720px;
+      margin: 0 auto;
+    }
+    .panel {
+      position: sticky;
+      top: 10px;
+      max-height: calc(100vh - 20px);
+      overflow-y: auto;
+      padding: 12px;
+      border-radius: 14px;
+      scrollbar-width: thin;
+    }
+    .panel h2 {
+      font-size: 18px;
+      margin: 0 0 10px;
+    }
+    .control {
+      margin-bottom: 10px;
+    }
+    .control label {
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    button {
+      padding: 10px 12px;
+      margin-top: 6px;
+      font-size: 14px;
+      border-radius: 11px;
+    }
+    .hint {
+      font-size: 12px;
+      padding: 8px 10px;
+      margin-top: 10px;
+      line-height: 1.55;
+      border-radius: 9px;
+    }
+    .mode-card {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 12px;
+    }
+    .mode-card h3 {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    .mode-card input[type="number"],
+    .mode-card input[type="text"],
+    .mode-card textarea {
+      padding: 7px 8px;
+      font-size: 13px;
+      border-radius: 8px;
+    }
+    .small-row {
+      gap: 6px;
+    }
+
+    .canvas-wrap {
+      display: grid;
+      grid-template-columns: minmax(680px, 1fr) 260px;
+      grid-template-rows: auto auto auto;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 16px;
+      align-items: start;
+    }
+    canvas {
+      grid-column: 1;
+      grid-row: 1;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1000 / 560;
+      border-radius: 14px;
+    }
+    .status {
+      grid-column: 1;
+      grid-row: 2;
+      margin-top: 0;
+      font-size: 14px;
+      padding: 9px 12px;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+    }
+    .inquiry-strip {
+      grid-column: 1;
+      grid-row: 3;
+      margin: 0;
+      display: grid;
+      grid-template-columns: 1.2fr repeat(3, minmax(130px, 160px)) 190px;
+      gap: 8px;
+      align-items: center;
+      padding: 10px;
+    }
+    .inquiry-strip h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+    .inquiry-strip button {
+      margin: 0;
+      padding: 9px 10px;
+      font-size: 13px;
+    }
+    .inquiry-strip label {
+      margin: 0;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .inquiry-strip .hint {
+      grid-column: 1 / -1;
+      margin: 0;
+      padding: 7px 9px;
+      font-size: 12px;
+    }
+    .canvas-data {
+      grid-column: 2;
+      grid-row: 1 / span 3;
+      margin: 0;
+      padding: 0;
+      border-top: 0;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      align-content: start;
+    }
+    .data-group {
+      min-height: auto;
+      padding: 9px 10px;
+      border-radius: 12px;
+    }
+    .data-group h3 {
+      font-size: 15px;
+      margin-bottom: 6px;
+      padding-bottom: 5px;
+    }
+    .vector-toggle-group {
+      gap: 5px 8px;
+      margin-bottom: 4px;
+      font-size: 11px;
+    }
+    .vector-toggle {
+      font-size: 11px;
+    }
+    .card {
+      padding: 6px 0;
+      gap: 8px;
+    }
+    .card small {
+      font-size: 12px;
+    }
+    .card strong {
+      font-size: 14px;
+      min-width: 78px;
+    }
+    .teaching {
+      grid-column: 1 / -1;
+      padding: 14px;
+      border-radius: 14px;
+    }
+    .teaching h2 {
+      font-size: 17px;
+      margin-bottom: 8px;
+    }
+    .formula {
+      font-size: 14px;
+      line-height: 1.65;
+      padding: 10px;
+    }
+
+    @media (max-width: 1280px) {
+      main {
+        grid-template-columns: 240px minmax(620px, 1fr);
+      }
+      .canvas-wrap {
+        grid-template-columns: 1fr;
+      }
+      .canvas-data {
+        grid-column: 1;
+        grid-row: 4;
+        grid-template-columns: repeat(4, minmax(150px, 1fr));
+      }
+      .inquiry-strip {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .inquiry-strip h3,
+      .inquiry-strip .hint {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: 1fr;
+        padding: 10px;
+      }
+      .panel {
+        position: static;
+        max-height: none;
+      }
+      .canvas-wrap {
+        display: block;
+      }
+      canvas {
+        height: auto;
+      }
+      .status, .inquiry-strip, .canvas-data {
+        margin-top: 10px;
+      }
+      .canvas-data {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+      .inquiry-strip {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 精簡左側控制欄：移除說明框後，縮小標靶設定區以增加模擬畫面空間 */
+    .target-setting {
+      margin-top: 8px !important;
+      padding: 9px 10px !important;
+      border-radius: 12px !important;
+      background: #f8fafc !important;
+    }
+    .target-setting-title {
+      margin-bottom: 6px !important;
+      font-size: 15px !important;
+    }
+    .target-setting label {
+      font-size: 13px !important;
+      margin-bottom: 3px !important;
+    }
+    .target-setting input {
+      height: 34px !important;
+      padding: 6px 8px !important;
+      font-size: 14px !important;
+    }
+    .target-setting button {
+      margin-top: 6px !important;
+      padding: 10px 12px !important;
+      border-radius: 12px !important;
+      font-size: 14px !important;
+    }
+    .panel .control { margin-bottom: 12px !important; }
+    .panel button { padding: 11px 14px; }
+
+
+
+    .hit-mode-setting {
+      margin-top: 8px;
+      padding: 9px 10px;
+      border: 1px solid #dbeafe;
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+    .hit-mode-title {
+      font-weight: 900;
+      color: #1e3a8a;
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+    .hit-mode-options {
+      display: grid;
+      gap: 6px;
+    }
+    .hit-mode-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      padding: 8px 9px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      background: #ffffff;
+      cursor: pointer;
+      font-size: 13px;
+      line-height: 1.45;
+      font-weight: 800;
+    }
+    .hit-mode-option input {
+      margin-top: 3px;
+      accent-color: #2563eb;
+    }
+    .hit-mode-option:has(input:checked) {
+      background: #eff6ff;
+      border-color: #2563eb;
+      color: #1e3a8a;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, .12);
+    }
+
+    /* ===== 修正：操作控制欄不再跟著滾輪固定 ===== */
+    .panel {
+      position: static !important;
+      top: auto !important;
+      max-height: none !important;
+      overflow-y: visible !important;
+    }
+    .mode-card.inquiry-side {
+      position: static !important;
+      top: auto !important;
+    }
+
+
+    /* 即時數據總標題 */
+    .data-panel-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: #1e3a8a;
+      margin-bottom: 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      border: 1px solid #bfdbfe;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, .08);
+    }
+    .info-details {
+      border: 1px solid #dbe3ef;
+      border-radius: 14px;
+      background: #f8fafc;
+      margin: 12px 0;
+      overflow: hidden;
+    }
+    .info-details summary {
+      cursor: pointer;
+      padding: 13px 15px;
+      font-weight: 900;
+      color: #1e3a8a;
+      background: linear-gradient(135deg, #f8fbff, #eef4ff);
+      border-bottom: 1px solid #dbe3ef;
+      list-style: none;
+    }
+    .info-details summary::-webkit-details-marker { display: none; }
+    .info-details summary::after {
+      content: '展開/收合';
+      float: right;
+      font-size: 12px;
+      color: #475569;
+      font-weight: 700;
+    }
+    .info-content {
+      padding: 14px 16px;
+      line-height: 1.8;
+    }
+    .info-content ul, .info-content ol {
+      margin-top: 6px;
+      padding-left: 24px;
+    }
+    .concept-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(240px, 1fr));
+      gap: 8px 18px;
+      margin: 10px 0 14px;
+      padding-left: 20px;
+    }
+    .color-key {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(160px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .key-item {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-weight: 800;
+    }
+    @media (max-width: 900px) {
+      .concept-list, .color-key { grid-template-columns: 1fr; }
+    }
+
+  </style>
+</head>
+<body>
+  <header>
+    <h1>砲台命中挑戰!斜拋運動，如何調整發射角度與初速度，才能讓砲彈精準命中目標？</h1>
+    <p>調整砲台仰角與初速度，拖曳標靶位置，嘗試命中紅色標靶，觀察拋體軌跡、飛行時間、鉛直速度與水平速度的變化。</p>
+  </header>
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+  <button class="drawer-tab" id="drawerTab" style="display:none;">探究填答</button>
+
+  <main>
+    <section class="panel">
+      <h2>操作控制</h2>
+
+      <div class="control">
+        <label>砲台仰角 <span id="angleText">45°</span></label>
+        <input id="angle" type="range" min="0" max="90" value="45" step="1" />
+      </div>
+
+      <div class="control">
+        <label>發射初速度 <span id="speedText">40 m/s</span></label>
+        <input id="speed" type="range" min="5" max="70" value="40" step="1" />
+      </div>
+
+      <button class="fire" id="fireBtn">發射砲彈</button>
+
+      <div class="control">
+        <label>重力加速度 <span id="gText">9.80 m/s²</span></label>
+        <input id="gInput" type="range" min="1" max="20" step="0.1" value="9.8" />
+      </div>
+
+      <div class="control">
+        <label>時間倍率 <span id="timeScaleText">1.00×</span></label>
+        <input id="timeScale" type="range" min="0.2" max="3" step="0.1" value="1" />
+      </div>
+
+      <button class="reset" id="pauseBtn">暫停 / 繼續</button>
+      <button class="reset" id="apexPauseBtn">最高點自動暫停：關</button>
+      <button class="reset" id="resetBtn">重設軌跡</button>
+
+
+        <div class="target-setting">
+          <div class="target-setting-title">🎯 標靶座標設定</div>
+          <div class="small-row">
+            <div>
+              <label for="targetXInput">x 座標（m）</label>
+              <input id="targetXInput" type="number" min="0" max="300" step="1" value="150" />
+            </div>
+            <div>
+              <label for="targetYInput">y 座標（m）</label>
+              <input id="targetYInput" type="number" min="0" max="150" step="1" value="30" />
+            </div>
+          </div>
+          <button class="reset" id="setTargetByCoordBtn">設定標靶位置</button>
+        </div>
+
+        <div class="hit-mode-setting">
+          <div class="hit-mode-title">🎯 命中判定模式</div>
+          <div class="hit-mode-options">
+            <label class="hit-mode-option">
+              <input type="radio" name="hitMode" value="point" checked>
+              精準模式：以砲彈質點中心進入標靶範圍為命中
+            </label>
+            <label class="hit-mode-option">
+              <input type="radio" name="hitMode" value="radius">
+              遊戲模式：砲彈外緣碰到標靶範圍即算命中
+            </label>
+          </div>
+        </div>
+
+
+    </section>
+
+    <section class="canvas-wrap">
+      <canvas id="world" width="1000" height="560"></canvas>
+      <div class="status" id="status">調整角度與速度後，按下「發射砲彈」。</div>
+
+    <section class="mode-card inquiry-strip">
+        <h3>🔬 探究任務模式</h3>
+        <button class="reset" id="startInquiryBtn">開啟探究任務模式</button>
+        <button class="reset" id="toggleInquiryPanelBtn">開啟 / 關閉填答欄</button>
+        <button class="reset" id="freeModeBtn">自由探索模式</button>
+        <label><input type="checkbox" id="showPrediction" checked> 顯示預測軌跡輔助線</label>
+    </section>
+
+
+
+      <div class="data canvas-data">
+        <div class="data-panel-title">📊 即時數據</div>
+        <div class="data-group">
+          <h3><span class="title-text">📍 位置</span></h3>
+          <div class="group-cards">
+            <div class="card"><small>水平距離 x</small><strong id="distanceText">--</strong></div>
+            <div class="card"><small>鉛直高度 y</small><strong id="heightText">--</strong></div>
+          </div>
+        </div>
+
+        <div class="data-group">
+          <h3><span class="title-text">⏱️ 時間</span></h3>
+          <div class="group-cards">
+            <div class="card"><small>飛行時間 t</small><strong id="timeText">--</strong></div>
+          </div>
+        </div>
+
+        <div class="data-group">
+          <h3><span class="title-text">🟣 速度</span><label class="vector-toggle"><input type="checkbox" id="showVelocity" checked>全部</label></h3>
+          <div class="vector-toggle-group">
+            <label class="vt"><input type="checkbox" id="show_vt" checked>v<sub>t</sub></label>
+            <label class="vx"><input type="checkbox" id="show_vx" checked>v<sub>x</sub></label>
+            <label class="vy"><input type="checkbox" id="show_vy" checked>v<sub>y</sub></label>
+          </div>
+          <div class="group-cards">
+            <div class="card"><small>水平速度 v<sub>x</sub></small><strong id="vxText" class="vx">--</strong></div>
+            <div class="card"><small>鉛直速度 v<sub>y</sub></small><strong id="vyNowText" class="vy">--</strong></div>
+            <div class="card"><small>切線速度 v<sub>t</sub></small><strong id="vtText" class="vt">--</strong></div>
+            <div class="card"><small>速度大小 v</small><strong id="vText">--</strong></div>
+          </div>
+        </div>
+
+        <div class="data-group">
+          <h3><span class="title-text">🔶 加速度</span><label class="vector-toggle"><input type="checkbox" id="showAcceleration" checked>全部</label></h3>
+          <div class="vector-toggle-group">
+            <label class="g"><input type="checkbox" id="show_g" checked>g</label>
+            <label class="at"><input type="checkbox" id="show_at" checked>a<sub>t</sub></label>
+            <label class="an"><input type="checkbox" id="show_an" checked>a<sub>n</sub></label>
+          </div>
+          <div class="group-cards">
+            <div class="card"><small>重力加速度 g</small><strong id="gValueText" class="g">--</strong></div>
+            <div class="card"><small>切線加速度 a<sub>t</sub></small><strong id="atText" class="at">--</strong></div>
+            <div class="card"><small>法線加速度 a<sub>n</sub></small><strong id="anText" class="an">--</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+
+    <section class="task-box" id="inquirySection" style="display:none;">
+      <div class="drawer-head"><h2 id="taskTitle">探究任務模式</h2><button class="drawer-close" id="closeInquiryPanelBtn" title="收合填答欄">×</button></div>
+      <p id="taskQuestion">請依照任務操作砲台，利用預測軌跡輔助線先判斷，再發射驗證。</p>
+      <div class="task-meta">
+        <div class="task-pill" id="taskSpeed">初速度：--</div>
+        <div class="task-pill" id="taskAngle">角度：--</div>
+        <div class="task-pill" id="taskGravity">重力：--</div>
+        <div class="task-pill" id="taskTarget">標靶：--</div>
+      </div>
+      <div id="taskTargetButtons" class="task-target-buttons"></div>
+      <div class="worksheet-card">
+        <h3>本題填答</h3>
+        <div id="taskAnswerFields"></div>
+        <label>觀察敘述</label>
+        <textarea id="observationInput" placeholder="請寫下你操作後的發現，例如：初速度越大，落地水平距離越遠。"></textarea>
+        <button class="fire" id="submitTaskBtn">送出本題</button>
+        <button class="reset" id="prevTaskBtn">上一題</button>
+        <button class="reset" id="loadTaskBtn">重新載入本題條件</button>
+        <button class="reset" id="nextTaskBtn">下一題</button>
+        <p id="taskFeedback"></p>
+      </div>
+      <div class="worksheet-grid">
+        <div class="worksheet-card"><h3>第一題</h3><p id="summary0">尚未完成</p></div>
+        <div class="worksheet-card"><h3>第二題</h3><p id="summary1">尚未完成</p></div>
+        <div class="worksheet-card"><h3>第三題</h3><p id="summary2">尚未完成</p></div>
+      </div>
+      <button class="fire" id="printPdfBtn" style="display:none;">所有題目完成，列印學習單 PDF</button>
+    </section>
+
+    <section id="printSheet" class="print-only"></section>
+
+    <section class="teaching">
+      <h2>📘 使用說明與物理概念整理</h2>
+
+      <details class="info-details" open>
+        <summary>使用說明</summary>
+        <div class="info-content">
+          <p><strong>自由探索模式：</strong>可自行調整發射角度、初始速度、重力加速度與時間倍率，觀察小流星砲彈的軌跡、飛行時間與落地距離。也可以拖曳星星標靶，或直接輸入 x、y 座標設定標靶位置。</p>
+          <p><strong>探究任務模式：</strong>按下「開啟探究任務模式」後，依照題目操作砲台並記錄數據。右側填答欄可輸入觀察結果，完成後可列印學習單 PDF。</p>
+          <p><strong>預測軌跡輔助線：</strong>灰色虛線會依照目前角度、初速度與重力加速度預測砲彈路徑，可用來和實際發射後的橘色軌跡比較。</p>
+          <p><strong>向量顯示：</strong>可依需求開啟或關閉速度與加速度箭頭，觀察不同物理量在飛行過程中的變化。</p>
+          <p><strong>命中判定模式：</strong>精準模式以高中物理常用的「質點模型」為基礎，當砲彈質量中心進入標靶範圍時才算命中；遊戲模式則把砲彈視為具有半徑的物體，當砲彈外緣碰到標靶範圍時即算命中。建議進行探究任務時使用精準模式，自由探索時可切換遊戲模式增加挑戰趣味。</p>
+        </div>
+      </details>
+
+      <details class="info-details" open>
+        <summary>物理概念整理</summary>
+        <div class="info-content">
+          <p>斜拋運動可以拆成水平與鉛直兩個方向分析。水平方向近似等速度運動；鉛直方向受到重力影響，做等加速度運動。</p>
+          <ul class="concept-list">
+            <li>水平方向速度 v<sub>x</sub> 近似保持不變。</li>
+            <li>鉛直方向速度 v<sub>y</sub> 會受到重力影響而改變。</li>
+            <li>最高點時 v<sub>y</sub> = 0，但 v<sub>x</sub> 仍存在。</li>
+            <li>相同初速度下，約 45° 可得到最大水平射程。</li>
+            <li>互補角 θ 與 90°−θ 會得到相同水平射程。</li>
+            <li>重力加速度越小，飛行時間與射程通常越大。</li>
+          </ul>
+
+          <div class="formula">
+            V<sub>x</sub>(t=0) = v₀ cosθ<br />
+            V<sub>y</sub>(t=0) = v₀ sinθ<br />
+            X(t) = v<sub>x</sub>t<br />
+            Y(t) = v<sub>y</sub>t − 1/2 gt²<br />
+            T = 2v₀ sinθ / g
+          </div>
+
+          <div class="color-key">
+            <div class="key-item vx">綠色：v<sub>x</sub> 水平速度</div>
+            <div class="key-item vy">紫色：v<sub>y</sub> 鉛直速度</div>
+            <div class="key-item vt">藍色：v<sub>t</sub> 切線速度</div>
+            <div class="key-item g">紅色：g 重力加速度</div>
+            <div class="key-item at">橘色：a<sub>t</sub> 切線加速度</div>
+            <div class="key-item an">黃色：a<sub>n</sub> 法線加速度</div>
+          </div>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('world');
+    const ctx = canvas.getContext('2d');
+
+    const angleInput = document.getElementById('angle');
+    const speedInput = document.getElementById('speed');
+    const gInput = document.getElementById('gInput');
+    const timeScaleInput = document.getElementById('timeScale');
+
+    const angleText = document.getElementById('angleText');
+    const speedText = document.getElementById('speedText');
+    const gText = document.getElementById('gText');
+    const timeScaleText = document.getElementById('timeScaleText');
+    const statusText = document.getElementById('status');
+
+    const fireBtn = document.getElementById('fireBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const apexPauseBtn = document.getElementById('apexPauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const distanceText = document.getElementById('distanceText');
+    const heightText = document.getElementById('heightText');
+    const timeText = document.getElementById('timeText');
+    const vxText = document.getElementById('vxText');
+    const vyNowText = document.getElementById('vyNowText');
+    const vtText = document.getElementById('vtText');
+    const vText = document.getElementById('vText');
+    const gValueText = document.getElementById('gValueText');
+    const atText = document.getElementById('atText');
+    const anText = document.getElementById('anText');
+
+    const showVelocityInput = document.getElementById('showVelocity');
+    const showAccelerationInput = document.getElementById('showAcceleration');
+    const show_vt = document.getElementById('show_vt');
+    const show_vx = document.getElementById('show_vx');
+    const show_vy = document.getElementById('show_vy');
+    const show_g = document.getElementById('show_g');
+    const show_at = document.getElementById('show_at');
+    const show_an = document.getElementById('show_an');
+
+    const startInquiryBtn = document.getElementById('startInquiryBtn');
+    const toggleInquiryPanelBtn = document.getElementById('toggleInquiryPanelBtn');
+    const closeInquiryPanelBtn = document.getElementById('closeInquiryPanelBtn');
+    const drawerBackdrop = document.getElementById('drawerBackdrop');
+    const drawerTab = document.getElementById('drawerTab');
+    const freeModeBtn = document.getElementById('freeModeBtn');
+    const targetXInput = document.getElementById('targetXInput');
+    const targetYInput = document.getElementById('targetYInput');
+    const setTargetByCoordBtn = document.getElementById('setTargetByCoordBtn');
+    const hitModeInputs = document.querySelectorAll('input[name="hitMode"]');
+    const showPredictionInput = document.getElementById('showPrediction');
+    const inquirySection = document.getElementById('inquirySection');
+    const taskTitle = document.getElementById('taskTitle');
+    const taskQuestion = document.getElementById('taskQuestion');
+    const taskSpeed = document.getElementById('taskSpeed');
+    const taskAngle = document.getElementById('taskAngle');
+    const taskGravity = document.getElementById('taskGravity');
+    const taskTarget = document.getElementById('taskTarget');
+    const taskAnswerFields = document.getElementById('taskAnswerFields');
+    const taskTargetButtons = document.getElementById('taskTargetButtons');
+    const observationInput = document.getElementById('observationInput');
+    const submitTaskBtn = document.getElementById('submitTaskBtn');
+    const prevTaskBtn = document.getElementById('prevTaskBtn');
+    const nextTaskBtn = document.getElementById('nextTaskBtn');
+    const loadTaskBtn = document.getElementById('loadTaskBtn');
+    const printPdfBtn = document.getElementById('printPdfBtn');
+    const taskFeedback = document.getElementById('taskFeedback');
+    const printSheet = document.getElementById('printSheet');
+
+
+    let g = Number(gInput.value);
+    const groundY = canvas.height - 60;
+    const xMax = 300;       // X 軸顯示 0~300 m
+    const yMax = 150;       // Y 軸顯示 0~150 m
+    const topPadding = 30;  // 上方預留空間，避免 100m 標籤被擋住
+
+    // 正方形比例：1m 在 x/y 方向長度相同
+    const scale = Math.min((canvas.width - 80) / xMax, (groundY - topPadding) / yMax);
+    const scaleX = scale;
+    const scaleY = scale;
+
+    const cannon = { x: 80, y: groundY };
+    let target = { x: cannon.x + 150 * scaleX, y: groundY - 30 * scaleY, r: 3 * scaleX }; // 標靶半徑 = 3 m
+    const projectileCanvasRadius = 8; // 畫面上的砲彈半徑，遊戲模式命中判定會使用
+    let hitMode = 'point'; // point：質點中心；radius：砲彈半徑
+    let targetVisible = true; // 前兩題以落點射程為主，不顯示標靶；互補角題才顯示標靶
+    let hitStars = []; // 命中時的星星特效
+
+    let projectile = null;
+    let path = [];
+    let animationId = null;
+    let draggingTarget = false;
+    let lastFrameTime = null;
+    let paused = false;
+    let apexPauseEnabled = false;
+
+    let inquiryMode = false;
+    let currentTaskIndex = 0;
+    let lastHitInfo = null;
+    let lastLandingInfo = null;
+    const taskResults = [null, null, null];
+    const taskHitRecords = [[], [], []];
+    const taskLandingRecords = [[], [], []];
+    let currentTargetOptionIndex = 0;
+    const inquiryTasks = [
+      {
+        title: '第一題：初速度與射程觀察',
+        question: '固定發射角度為 45°，請依序將初速度設定為 20、30、40 m/s 並發射，觀察砲彈落地的水平距離如何改變。本題不需要標靶，請直接觀察落地水平距離並完成紀錄。',
+        speed: 20, speedLabel: '20、30、40 m/s', angle: 45, gravity: 10, noTarget: true,
+        fields: [
+          { id:'range20', label:'觀察紀錄：初速度 20 m/s 時，水平距離（m）', type:'number' },
+          { id:'range30', label:'觀察紀錄：初速度 30 m/s 時，水平距離（m）', type:'number' },
+          { id:'range40', label:'觀察紀錄：初速度 40 m/s 時，水平距離（m）', type:'number' },
+          { id:'speedLargeTrend', label:'1. 角度固定時，初速度越大，水平距離越', type:'radio', options:['遠','近'] },
+          { id:'speedSmallTrend', label:'2. 角度固定時，初速度越小，水平距離越', type:'radio', options:['遠','近'] }
+        ]
+      },
+      {
+        title: '第二題：最大射程角度探究',
+        question: '在相同初速度下，哪一個發射角度可以讓砲彈飛得最遠？請自行在 0°～90° 之間調整角度，用兩組初速度分別測試，找出射程最大的角度並記錄最大水平距離。本題不需要標靶。',
+        speed: 30, speedLabel: '30、40 m/s', angle: null, angleLabel: '0°～90° 自行測試', gravity: 10, noTarget: true,
+        fields: [
+          { id:'v30BestAngle', label:'v₀=30 m/s 時，你找到的最大射程角度（度）', type:'number' },
+          { id:'v30BestRange', label:'v₀=30 m/s 時，最大水平距離（m）', type:'number' },
+          { id:'v40BestAngle', label:'v₀=40 m/s 時，你找到的最大射程角度（度）', type:'number' },
+          { id:'v40BestRange', label:'v₀=40 m/s 時，最大水平距離（m）', type:'number' },
+          { id:'overallBestAngle', label:'兩組不同初速度下，最大射程角度約為（度）', type:'number' }
+        ]
+      },
+      {
+        title: '第三題：三標靶互補角挑戰',
+        question: '固定初速度，分別挑戰三個不同距離的地面標靶。請點選下方標靶選項載入題目，並由小到大填入每個標靶可以命中的兩個角度，觀察兩個角度相加是否有規律。',
+        speed: 40, angle: null, gravity: 10, targetX: 80, targetY: 0,
+        targetOptions: [
+          { label:'標靶 A', x:80, y:0, expectedSmall:15, expectedLarge:75 },
+          { label:'標靶 B', x:120, y:0, expectedSmall:24.3, expectedLarge:65.7 },
+          { label:'標靶 C', x:150, y:0, expectedSmall:34.8, expectedLarge:55.2 }
+        ],
+        fields: [
+          { id:'targetASmall', label:'標靶 A：較小命中角度（度）', type:'number' },
+          { id:'targetALarge', label:'標靶 A：較大命中角度（度）', type:'number' },
+          { id:'targetASum', label:'標靶 A：兩角相加（度）', type:'number' },
+          { id:'targetBSmall', label:'標靶 B：較小命中角度（度）', type:'number' },
+          { id:'targetBLarge', label:'標靶 B：較大命中角度（度）', type:'number' },
+          { id:'targetBSum', label:'標靶 B：兩角相加（度）', type:'number' },
+          { id:'targetCSmall', label:'標靶 C：較小命中角度（度）', type:'number' },
+          { id:'targetCLarge', label:'標靶 C：較大命中角度（度）', type:'number' },
+          { id:'targetCSum', label:'標靶 C：兩角相加（度）', type:'number' }
+        ]
+      }
+    ];
+
+
+    function worldToCanvas(x, y) {
+      return { x: cannon.x + x * scaleX, y: groundY - y * scaleY };
+    }
+
+    function canvasToWorld(px, py) {
+      return { x: (px - cannon.x) / scaleX, y: (groundY - py) / scaleY };
+    }
+
+
+
+    function syncTargetInputs(x, y) {
+      if (targetXInput) targetXInput.value = Number(x).toFixed(0);
+      if (targetYInput) targetYInput.value = Number(y).toFixed(0);
+    }
+
+    function setTargetWorld(x, y, syncInputs = true) {
+      const safeX = Math.max(0, Math.min(xMax, Number(x)));
+      const safeY = Math.max(0, Math.min(yMax, Number(y)));
+      target.x = cannon.x + safeX * scaleX;
+      target.y = groundY - safeY * scaleY;
+      if (syncInputs) syncTargetInputs(safeX, safeY);
+    }
+
+    function setTargetFromInputs() {
+      targetVisible = true;
+      const x = Number(targetXInput.value);
+      const y = Number(targetYInput.value);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) {
+        statusText.textContent = '請輸入有效的標靶 x、y 座標。';
+        return;
+      }
+      const safeX = Math.max(0, Math.min(xMax, x));
+      const safeY = Math.max(0, Math.min(yMax, y));
+      setTargetWorld(safeX, safeY);
+      statusText.textContent = `已將標靶設定到 (${safeX.toFixed(0)} m, ${safeY.toFixed(0)} m)。`;
+      draw();
+    }
+
+    function setInputValue(input, value) {
+      input.value = value;
+      input.dispatchEvent(new Event('input'));
+    }
+
+    function drawPredictionPath() {
+      if (!showPredictionInput || !showPredictionInput.checked) return;
+      const angle = Number(angleInput.value) * Math.PI / 180;
+      const speed = Number(speedInput.value);
+      const vx = speed * Math.cos(angle);
+      const vy0 = speed * Math.sin(angle);
+      if (vx <= 0 || speed <= 0) return;
+      ctx.save();
+      ctx.setLineDash([8, 8]);
+      ctx.strokeStyle = 'rgba(71, 85, 105, 0.65)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      let started = false;
+      const totalTime = vy0 > 0 ? (2 * vy0 / g) : 1;
+      const maxT = Math.min(totalTime, xMax / Math.max(vx, 0.01));
+      for (let i = 0; i <= 120; i++) {
+        const t = maxT * i / 120;
+        const x = vx * t;
+        const y = vy0 * t - 0.5 * g * t * t;
+        if (y < 0 && i > 0) break;
+        const p = worldToCanvas(x, Math.max(0, y));
+        if (!started) { ctx.moveTo(p.x, p.y); started = true; }
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.stroke();
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillStyle = '#475569';
+      ctx.fillText('預測軌跡', cannon.x + 18, groundY - 28);
+      ctx.restore();
+    }
+
+    function openInquiryPanel() {
+      if (!inquiryMode) loadInquiryTask(currentTaskIndex);
+      inquirySection.style.display = 'block';
+      inquirySection.classList.add('open');
+      drawerBackdrop.classList.add('open');
+      drawerTab.style.display = 'none';
+      updateInquiryModeButtons();
+    }
+
+    function closeInquiryPanel() {
+      inquirySection.classList.remove('open');
+      drawerBackdrop.classList.remove('open');
+      if (inquiryMode) drawerTab.style.display = 'block';
+      updateInquiryModeButtons();
+    }
+
+    function toggleInquiryPanel() {
+      if (inquirySection.classList.contains('open')) closeInquiryPanel();
+      else openInquiryPanel();
+    }
+
+
+    function updateInquiryModeButtons() {
+      if (!startInquiryBtn || !toggleInquiryPanelBtn || !freeModeBtn) return;
+      startInquiryBtn.classList.toggle('mode-active', inquiryMode);
+      toggleInquiryPanelBtn.classList.toggle('mode-active', inquiryMode && inquirySection.classList.contains('open'));
+      freeModeBtn.classList.toggle('mode-active', !inquiryMode);
+    }
+
+    function loadInquiryTask(index) {
+      inquiryMode = true;
+      currentTaskIndex = Math.max(0, Math.min(inquiryTasks.length - 1, index));
+      const task = inquiryTasks[currentTaskIndex];
+      currentTargetOptionIndex = 0;
+      targetVisible = !task.noTarget;
+      inquirySection.style.display = 'block';
+      inquirySection.classList.add('open');
+      drawerBackdrop.classList.add('open');
+      drawerTab.style.display = 'none';
+      updateInquiryModeButtons();
+      taskTitle.textContent = task.title;
+      taskQuestion.textContent = task.question;
+      taskSpeed.textContent = task.speedLabel ? `初速度：${task.speedLabel}` : `初速度：${task.speed} m/s`;
+      taskAngle.textContent = task.angleLabel ? `角度：${task.angleLabel}` : (task.angle === null ? '角度：學生自行調整' : `角度：${task.angle}°`);
+      taskGravity.textContent = `重力：${task.gravity} m/s²`;
+      const activeTarget = task.targetOptions ? task.targetOptions[currentTargetOptionIndex] : task;
+      if (task.noTarget) {
+        taskTarget.textContent = '標靶：本題不使用，請觀察落地水平距離';
+        taskTargetButtons.innerHTML = '';
+      } else {
+        taskTarget.textContent = task.targetOptions
+          ? `目前標靶：${activeTarget.label} (${activeTarget.x} m, ${activeTarget.y} m)`
+          : `標靶：(${task.targetX} m, ${task.targetY} m)`;
+        taskTargetButtons.innerHTML = task.targetOptions ? task.targetOptions.map((opt, i) =>
+          `<button type="button" class="${i === currentTargetOptionIndex ? 'active' : ''}" onclick="loadTaskTargetOption(${i})">${opt.label}：(${opt.x}, ${opt.y})</button>`
+        ).join('') : '';
+      }
+      setInputValue(speedInput, task.speed);
+      setInputValue(gInput, task.gravity);
+      if (task.angle !== null) setInputValue(angleInput, task.angle);
+      if (!task.noTarget) setTargetWorld(activeTarget.x ?? task.targetX, activeTarget.y ?? task.targetY);
+      taskAnswerFields.innerHTML = task.fields.map(f => {
+        const value = taskResults[currentTaskIndex]?.answers?.[f.id] ?? '';
+        if (f.type === 'radio') {
+          const options = (f.options || []).map(opt =>
+            `<label class="radio-option"><input type="radio" name="${f.id}" value="${opt}" ${String(value) === String(opt) ? 'checked' : ''}>${opt}</label>`
+          ).join('');
+          return `<div class="question-block"><p>${f.label}</p><div class="radio-options">${options}</div></div>`;
+        }
+        if (f.type === 'select') {
+          const options = (f.options || []).map(opt => `<option value="${opt}" ${String(value) === String(opt) ? 'selected' : ''}>${opt || '請選擇'}</option>`).join('');
+          return `<label>${f.label}</label><select id="${f.id}">${options}</select>`;
+        }
+        return `<label>${f.label}</label><input id="${f.id}" type="${f.type}" step="0.01" value="${value}">`;
+      }).join('');
+      observationInput.value = taskResults[currentTaskIndex]?.observation ?? '';
+      taskFeedback.textContent = currentTaskIndex === 0
+        ? '請依序設定初速度 20、30、40 m/s，分別發射後記錄落地水平距離，並完成兩個選擇題。'
+        : (currentTaskIndex === 1
+          ? '請分別設定 v₀=30、40 m/s，自行調整 0°～90° 的角度，找出射程最大的角度與距離。'
+          : '請先觀察預測軌跡，調整參數後發射，命中後填答。');
+      taskFeedback.className = '';
+      lastHitInfo = null;
+      lastLandingInfo = null;
+      reset();
+      draw();
+    }
+
+    function loadTaskTargetOption(optionIndex) {
+      const task = inquiryTasks[currentTaskIndex];
+      if (!task.targetOptions) return;
+      targetVisible = true;
+      currentTargetOptionIndex = Math.max(0, Math.min(task.targetOptions.length - 1, optionIndex));
+      const opt = task.targetOptions[currentTargetOptionIndex];
+      taskTarget.textContent = `目前標靶：${opt.label} (${opt.x} m, ${opt.y} m)`;
+      taskTargetButtons.querySelectorAll('button').forEach((btn, i) => btn.classList.toggle('active', i === currentTargetOptionIndex));
+      setTargetWorld(opt.x, opt.y);
+      lastHitInfo = null;
+      lastLandingInfo = null;
+      reset();
+      statusText.textContent = `已載入${opt.label}，請調整角度讓砲彈質點中心命中標靶。`;
+    }
+
+    window.loadTaskTargetOption = loadTaskTargetOption;
+
+    function getTaskAnswers() {
+      const task = inquiryTasks[currentTaskIndex];
+      const answers = {};
+      for (const field of task.fields) {
+        if (field.type === 'radio') {
+          const checked = document.querySelector(`input[name="${field.id}"]:checked`);
+          answers[field.id] = checked ? checked.value.trim() : '';
+        } else {
+          const el = document.getElementById(field.id);
+          answers[field.id] = el ? el.value.trim() : '';
+        }
+      }
+      return answers;
+    }
+
+    function near(value, target, tolerance) {
+      const n = Number(value);
+      return Number.isFinite(n) && Math.abs(n - target) <= tolerance;
+    }
+
+    function validateTask() {
+      const answers = getTaskAnswers();
+      const obs = observationInput.value.trim();
+      if (obs.length < 8) return { ok:false, msg:'請先填寫至少一句觀察敘述。' };
+
+      if (currentTaskIndex === 0) {
+        if (!near(answers.range20, 40, 5)) return { ok:false, msg:'初速度 20 m/s 時，水平距離約為 40 m。請再次操作並修正紀錄。' };
+        if (!near(answers.range30, 90, 5)) return { ok:false, msg:'初速度 30 m/s 時，水平距離約為 90 m。請再次操作並修正紀錄。' };
+        if (!near(answers.range40, 160, 5)) return { ok:false, msg:'初速度 40 m/s 時，水平距離約為 160 m。請再次操作並修正紀錄。' };
+        if (answers.speedLargeTrend !== '遠') return { ok:false, msg:'第 1 小題請選「遠」：角度固定時，初速度越大，水平距離越遠。' };
+        if (answers.speedSmallTrend !== '近') return { ok:false, msg:'第 2 小題請選「近」：角度固定時，初速度越小，水平距離越近。' };
+      }
+
+      if (currentTaskIndex === 1) {
+        if (!near(answers.v30BestAngle, 45, 3)) return { ok:false, msg:'v₀=30 m/s 時，最大射程角度約為 45°。請在 0°～90° 之間多試幾次後修正。' };
+        if (!near(answers.v30BestRange, 90, 6)) return { ok:false, msg:'v₀=30 m/s、θ約45° 時，最大水平距離約為 90 m。' };
+        if (!near(answers.v40BestAngle, 45, 3)) return { ok:false, msg:'v₀=40 m/s 時，最大射程角度約為 45°。請在 0°～90° 之間多試幾次後修正。' };
+        if (!near(answers.v40BestRange, 160, 7)) return { ok:false, msg:'v₀=40 m/s、θ約45° 時，最大水平距離約為 160 m。' };
+        if (!near(answers.overallBestAngle, 45, 3)) return { ok:false, msg:'綜合兩組初速度，可以發現最大射程角度約為 45°。' };
+      }
+
+      if (currentTaskIndex === 2) {
+        const aSmall = Number(answers.targetASmall);
+        const aLarge = Number(answers.targetALarge);
+        const bSmall = Number(answers.targetBSmall);
+        const bLarge = Number(answers.targetBLarge);
+        const cSmall = Number(answers.targetCSmall);
+        const cLarge = Number(answers.targetCLarge);
+        const sumA = Number(answers.targetASum);
+        const sumB = Number(answers.targetBSum);
+        const sumC = Number(answers.targetCSum);
+        const hasHitA = taskHitRecords[2].some(h => Math.abs(h.targetX - 80) < 0.5);
+        const hasHitB = taskHitRecords[2].some(h => Math.abs(h.targetX - 120) < 0.5);
+        const hasHitC = taskHitRecords[2].some(h => Math.abs(h.targetX - 150) < 0.5);
+        if (!hasHitA || !hasHitB || !hasHitC) return { ok:false, msg:'請先分別點選並載入標靶 A、B、C，實際命中三個標靶後再送出。' };
+        const okA = near(aSmall, 15, 3) && near(aLarge, 75, 3) && aSmall < aLarge && near(sumA, 90, 3);
+        const okB = near(bSmall, 24.3, 3) && near(bLarge, 65.7, 3) && bSmall < bLarge && near(sumB, 90, 3);
+        const okC = near(cSmall, 34.8, 3) && near(cLarge, 55.2, 3) && cSmall < cLarge && near(sumC, 90, 3);
+        if (!okA) return { ok:false, msg:'標靶 A 的合理答案約為 15°、75°，兩角相加約 90°，請由小到大填寫。' };
+        if (!okB) return { ok:false, msg:'標靶 B 的合理答案約為 24°、66°，兩角相加約 90°，請由小到大填寫。' };
+        if (!okC) return { ok:false, msg:'標靶 C 的合理答案約為 35°、55°，兩角相加約 90°，請由小到大填寫。' };
+      }
+      return { ok:true, msg:'本題完成！可以進入下一題。' };
+    }
+
+    function updateTaskSummaries() {
+      for (let i = 0; i < taskResults.length; i++) {
+        const box = document.getElementById(`summary${i}`);
+        if (!box) continue;
+        if (!taskResults[i]) box.textContent = '尚未完成';
+        else box.innerHTML = `<span class="success-msg">✓ 已完成</span><br>觀察：${taskResults[i].observation}`;
+      }
+      printPdfBtn.style.display = taskResults.every(Boolean) ? 'block' : 'none';
+    }
+
+    function submitCurrentTask() {
+      const result = validateTask();
+      taskFeedback.textContent = result.msg;
+      taskFeedback.className = result.ok ? 'success-msg' : 'warn-msg';
+      if (!result.ok) return;
+      taskResults[currentTaskIndex] = {
+        title: inquiryTasks[currentTaskIndex].title,
+        question: inquiryTasks[currentTaskIndex].question,
+        condition: currentTaskIndex === 0
+          ? `θ=${inquiryTasks[currentTaskIndex].angle}°，g=${inquiryTasks[currentTaskIndex].gravity} m/s²，分別測試 v₀=20、30、40 m/s`
+          : (currentTaskIndex === 1
+            ? `g=${inquiryTasks[currentTaskIndex].gravity} m/s²，分別用 v₀=30、40 m/s 在 0°～90° 間自行測試，找出最大射程角度`
+            : `v₀=${inquiryTasks[currentTaskIndex].speed} m/s，θ=自行調整，g=${inquiryTasks[currentTaskIndex].gravity} m/s²，標靶 A=(80,0)，標靶 B=(120,0)，標靶 C=(150,0)`),
+        answers: getTaskAnswers(),
+        observation: observationInput.value.trim(),
+        hit: lastHitInfo || lastLandingInfo
+      };
+      updateTaskSummaries();
+      if (currentTaskIndex < inquiryTasks.length - 1) {
+        taskFeedback.textContent = '本題完成！請按「下一題」繼續。';
+      } else {
+        taskFeedback.textContent = '所有題目完成後，可以列印學習單 PDF。';
+      }
+    }
+
+    function buildPrintSheet() {
+      const now = new Date().toLocaleDateString('zh-TW');
+      let html = `<h1>斜拋運動砲台命中挑戰 探究學習單</h1><p>姓名：____________　班級：____________　日期：${now}</p>`;
+      taskResults.forEach((r, i) => {
+        html += `<h2>${r.title}</h2><p><strong>探究問題：</strong>${r.question}</p><p><strong>任務條件：</strong>${r.condition}</p><table><tr><th>填答項目</th><th>學生紀錄</th></tr>`;
+        const taskMeta = inquiryTasks[i];
+        for (const field of taskMeta.fields) {
+          const value = r.answers[field.id] ?? '';
+          html += `<tr><td>${field.label}</td><td>${value}</td></tr>`;
+        }
+        if (r.hit) html += `<tr><td>操作紀錄</td><td>角度 ${r.hit.angle.toFixed(2)}°，初速度 ${r.hit.speed.toFixed(2)} m/s，時間 ${r.hit.time.toFixed(2)} s</td></tr>`;
+        html += `</table><p><strong>觀察敘述：</strong>${r.observation}</p>`;
+      });
+      html += `<h2>綜合反思</h2><p>1. 發射角度會如何影響射程？</p><p>____________________________________________________________</p><p>2. 為什麼同一個標靶可能有兩個命中角度？</p><p>____________________________________________________________</p><p>3. 初速度與發射角度分別如何影響斜拋射程？</p><p>____________________________________________________________</p><p>4. 在相同初速度下，最大射程角度約為多少？</p><p>____________________________________________________________</p>`;
+      printSheet.innerHTML = html;
+    }
+
+    function updateLabels() {
+      g = Number(gInput.value);
+      const angle = Number(angleInput.value);
+      const speed = Number(speedInput.value);
+      const timeScale = Number(timeScaleInput.value);
+      const rad = angle * Math.PI / 180;
+      const vx = speed * Math.cos(rad);
+      const vy = speed * Math.sin(rad);
+      const totalTime = angle === 0 ? 0 : (2 * vy / g);
+      const speedNow0 = Math.sqrt(vx * vx + vy * vy);
+      const an0 = speedNow0 === 0 ? 0 : (g * Math.abs(vx) / speedNow0);
+
+      angleText.textContent = angle.toFixed(2) + '°';
+      speedText.textContent = speed.toFixed(2) + ' m/s';
+      gText.textContent = g.toFixed(2) + ' m/s²';
+      timeScaleText.textContent = timeScale.toFixed(2) + '×';
+
+      distanceText.textContent = '0.00 m';
+      heightText.textContent = '0.00 m';
+      timeText.textContent = totalTime.toFixed(2) + ' s';
+      vxText.textContent = vx.toFixed(2) + ' m/s';
+      vyNowText.textContent = vy.toFixed(2) + ' m/s';
+      vtText.textContent = speed.toFixed(2) + ' m/s';
+      vText.textContent = speed.toFixed(2) + ' m/s';
+      gValueText.textContent = g.toFixed(2) + ' m/s²';
+      atText.textContent = '0.00 m/s²';
+      anText.textContent = an0.toFixed(2) + ' m/s²';
+
+      draw();
+    }
+
+
+    function drawSceneryBackground() {
+      // 輕量風景背景：保留格線與座標可讀性，不影響物理觀察。
+      ctx.save();
+
+      // 天空漸層
+      const sky = ctx.createLinearGradient(0, 0, 0, groundY);
+      sky.addColorStop(0, '#bfdbfe');
+      sky.addColorStop(0.58, '#eff6ff');
+      sky.addColorStop(1, '#dcfce7');
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 太陽
+      ctx.beginPath();
+      ctx.arc(canvas.width - 95, 72, 30, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(250, 204, 21, 0.75)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.65)';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // 雲朵
+      function cloud(x, y, s = 1) {
+        ctx.save();
+        ctx.globalAlpha = 0.82;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(x, y, 14 * s, 0, Math.PI * 2);
+        ctx.arc(x + 18 * s, y - 8 * s, 18 * s, 0, Math.PI * 2);
+        ctx.arc(x + 39 * s, y, 15 * s, 0, Math.PI * 2);
+        ctx.arc(x + 18 * s, y + 7 * s, 17 * s, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+      cloud(160, 76, 1.0);
+      cloud(430, 112, 0.85);
+      cloud(690, 65, 0.75);
+
+      // 遠山
+      ctx.globalAlpha = 0.42;
+      ctx.fillStyle = '#86efac';
+      ctx.beginPath();
+      ctx.moveTo(cannon.x + 10, groundY);
+      ctx.lineTo(cannon.x + 170, groundY - 112);
+      ctx.lineTo(cannon.x + 320, groundY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#4ade80';
+      ctx.beginPath();
+      ctx.moveTo(cannon.x + 240, groundY);
+      ctx.lineTo(cannon.x + 460, groundY - 142);
+      ctx.lineTo(cannon.x + 660, groundY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // 草地
+      ctx.fillStyle = '#bbf7d0';
+      ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+      ctx.fillStyle = '#86efac';
+      ctx.fillRect(0, groundY, canvas.width, 12);
+
+      // 小樹
+      function tree(x, y, s = 1) {
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(x - 3 * s, y - 20 * s, 6 * s, 20 * s);
+        ctx.beginPath();
+        ctx.arc(x, y - 28 * s, 14 * s, 0, Math.PI * 2);
+        ctx.fillStyle = '#16a34a';
+        ctx.fill();
+      }
+      tree(canvas.width - 170, groundY, 0.9);
+      tree(canvas.width - 120, groundY, 0.75);
+
+      ctx.restore();
+    }
+
+    function drawGrid() {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
+      ctx.lineWidth = 1;
+      ctx.font = '12px sans-serif';
+      ctx.fillStyle = '#64748b';
+
+      const gridStep = 10;
+
+      // 垂直線
+      for (let xMeter = 0; xMeter <= xMax; xMeter += gridStep) {
+        const x = cannon.x + xMeter * scaleX;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, groundY);
+        ctx.stroke();
+
+        // 刻度完全對齊線（每50m）
+        if (xMeter % 50 === 0) {
+          ctx.fillText(xMeter + 'm', x, groundY + 18);
+        }
+      }
+
+      // 水平線
+      for (let yMeter = 0; yMeter <= yMax; yMeter += gridStep) {
+        const y = groundY - yMeter * scaleY;
+        ctx.beginPath();
+        ctx.moveTo(cannon.x, y);
+        ctx.lineTo(cannon.x + xMax * scaleX, y);
+        ctx.stroke();
+
+        if (yMeter % 50 === 0 && yMeter !== 0) {
+          ctx.fillText(yMeter + 'm', 35, y);
+        }
+      }
+
+      ctx.restore();
+    }
+
+    function drawCannon() {
+      const angle = Number(angleInput.value) * Math.PI / 180;
+      const barrelLength = 50; // 縮短砲管
+      const endX = cannon.x + Math.cos(angle) * barrelLength;
+      const endY = cannon.y - Math.sin(angle) * barrelLength;
+
+      ctx.save();
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = '#111827';
+      ctx.lineWidth = 12; // 變細
+      ctx.beginPath();
+      ctx.moveTo(cannon.x, cannon.y);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+
+      ctx.fillStyle = '#374151';
+      ctx.beginPath();
+      ctx.arc(cannon.x, cannon.y, 20, 0, Math.PI * 2); // 縮小底座
+      ctx.fill();
+
+      ctx.fillStyle = '#111827';
+      ctx.fillRect(cannon.x - 30, cannon.y + 12, 60, 12); // 縮小底盤
+      ctx.restore();
+    }
+
+    function drawStarShape(cx, cy, outerRadius, innerRadius, points = 5) {
+      ctx.beginPath();
+      for (let i = 0; i < points * 2; i++) {
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        const angle = -Math.PI / 2 + i * Math.PI / points;
+        const x = cx + Math.cos(angle) * radius;
+        const y = cy + Math.sin(angle) * radius;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+    }
+
+    function drawTarget() {
+      if (!targetVisible) return;
+      ctx.save();
+
+      // 仍保留淡紅色命中範圍，讓學生知道物理判定區域。
+      ctx.beginPath();
+      ctx.arc(target.x, target.y, target.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.12)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.45)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // 可愛星星標靶。
+      drawStarShape(target.x, target.y, 17, 7, 5);
+      ctx.fillStyle = '#facc15';
+      ctx.fill();
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(target.x, target.y, 3, 0, Math.PI * 2);
+      ctx.fillStyle = '#ef4444';
+      ctx.fill();
+
+      const w = canvasToWorld(target.x, target.y);
+      ctx.fillStyle = '#111827';
+      ctx.font = '14px sans-serif';
+      ctx.fillText(`星星標靶：x=${w.x.toFixed(2)}m, y=${w.y.toFixed(2)}m`, Math.max(10, target.x - 86), target.y - 25);
+      ctx.restore();
+    }
+
+    function drawPath() {
+      if (path.length < 2) return;
+      ctx.save();
+      ctx.strokeStyle = '#f97316';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(path[0].x, path[0].y);
+      for (const p of path) ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawArrow(startX, startY, vecX, vecY, label, color, scaleFactor = 1) {
+      const len = Math.sqrt(vecX * vecX + vecY * vecY);
+      if (len < 0.001) return;
+
+      const drawLen = Math.min(95, Math.abs(len) * scaleFactor);
+      const ux = vecX / len;
+      const uy = vecY / len;
+      const endX = startX + ux * drawLen;
+      const endY = startY + uy * drawLen;
+      const arrowAngle = Math.atan2(uy, ux);
+      const head = 9;
+
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(endX, endY);
+      ctx.lineTo(endX - head * Math.cos(arrowAngle - Math.PI / 6), endY - head * Math.sin(arrowAngle - Math.PI / 6));
+      ctx.lineTo(endX - head * Math.cos(arrowAngle + Math.PI / 6), endY - head * Math.sin(arrowAngle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillText(label, endX + 6, endY - 6);
+      ctx.restore();
+    }
+
+    function drawMeteor(x, y, vx, vy) {
+      const speedAngle = Math.atan2(-vy, vx);
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(speedAngle);
+
+      // 小流星拖尾：方向跟速度相反，保留可愛感但不干擾質點中心。
+      const tail = ctx.createLinearGradient(-42, 0, 3, 0);
+      tail.addColorStop(0, 'rgba(251, 146, 60, 0.00)');
+      tail.addColorStop(0.45, 'rgba(251, 146, 60, 0.45)');
+      tail.addColorStop(1, 'rgba(253, 224, 71, 0.85)');
+      ctx.beginPath();
+      ctx.moveTo(-42, 0);
+      ctx.quadraticCurveTo(-24, -14, 2, -9);
+      ctx.quadraticCurveTo(-7, 0, 2, 9);
+      ctx.quadraticCurveTo(-24, 14, -42, 0);
+      ctx.closePath();
+      ctx.fillStyle = tail;
+      ctx.fill();
+
+      // 發光外圈
+      ctx.beginPath();
+      ctx.arc(0, 0, 13, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.28)';
+      ctx.fill();
+
+      // 流星本體
+      const body = ctx.createRadialGradient(-4, -4, 2, 0, 0, 10);
+      body.addColorStop(0, '#fff7ed');
+      body.addColorStop(0.55, '#facc15');
+      body.addColorStop(1, '#f97316');
+      ctx.beginPath();
+      ctx.arc(0, 0, 9, 0, Math.PI * 2);
+      ctx.fillStyle = body;
+      ctx.fill();
+      ctx.strokeStyle = '#7c2d12';
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+
+      // 小亮點，讓質點中心可辨識
+      ctx.beginPath();
+      ctx.arc(-3, -3, 2.3, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+
+      // 中心點：提示這是質點模型的參考位置
+      ctx.beginPath();
+      ctx.arc(0, 0, 2.2, 0, Math.PI * 2);
+      ctx.fillStyle = '#ef4444';
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function createHitStars(cx, cy) {
+      hitStars = [];
+      for (let i = 0; i < 18; i++) {
+        const angle = (Math.PI * 2 * i) / 18;
+        const distance = 20 + (i % 4) * 8;
+        hitStars.push({
+          x: cx + Math.cos(angle) * distance,
+          y: cy + Math.sin(angle) * distance,
+          r: 5 + (i % 3),
+          rotation: angle
+        });
+      }
+    }
+
+    function drawHitStars() {
+      if (!hitStars.length) return;
+      ctx.save();
+      for (const star of hitStars) {
+        ctx.save();
+        ctx.translate(star.x, star.y);
+        ctx.rotate(star.rotation);
+        drawStarShape(0, 0, star.r, star.r * 0.45, 5);
+        ctx.fillStyle = '#fde047';
+        ctx.fill();
+        ctx.strokeStyle = '#f97316';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+        ctx.restore();
+      }
+      ctx.font = 'bold 24px sans-serif';
+      ctx.fillStyle = '#f97316';
+      ctx.fillText('命中！', Math.max(12, target.x - 35), Math.max(28, target.y - 34));
+      ctx.restore();
+    }
+
+    function drawProjectile() {
+      if (!projectile) return;
+
+      const p = worldToCanvas(projectile.x, projectile.y);
+      const vyNow = projectile.vy0 - g * projectile.t;
+      const speedNow = Math.sqrt(projectile.vx ** 2 + vyNow ** 2);
+      const screenVx = projectile.vx;
+      const screenVy = -vyNow;
+
+      if (showVelocityInput.checked) {
+        if (show_vt.checked) drawArrow(p.x, p.y, screenVx, screenVy, `vₜ ${speedNow.toFixed(2)}`, '#2563eb', 2.0);
+        if (show_vx.checked) drawArrow(p.x, p.y, projectile.vx, 0, `vₓ ${projectile.vx.toFixed(2)}`, '#16a34a', 2.0);
+        if (show_vy.checked) drawArrow(p.x, p.y, 0, -vyNow, `vᵧ ${vyNow.toFixed(2)}`, '#9333ea', 2.0);
+      }
+
+      if (showAccelerationInput.checked) {
+        const tangentAcceleration = speedNow === 0 ? 0 : (-g * vyNow / speedNow);
+        const normalAcceleration = speedNow === 0 ? 0 : (g * Math.abs(projectile.vx) / speedNow);
+        const tx = screenVx / Math.max(speedNow, 0.001);
+        const ty = screenVy / Math.max(speedNow, 0.001);
+        const gravityX = 0;
+        const gravityY = g;
+        const atProjection = gravityX * tx + gravityY * ty;
+        const atX = atProjection * tx;
+        const atY = atProjection * ty;
+        const anX = gravityX - atX;
+        const anY = gravityY - atY;
+
+        if (show_g.checked) drawArrow(p.x, p.y, 0, g, `g ${g.toFixed(2)}`, '#dc2626', 7.0);
+        if (show_at.checked) drawArrow(p.x, p.y, atX, atY, `aₜ ${tangentAcceleration.toFixed(2)}`, '#f97316', 7.0);
+        if (show_an.checked) drawArrow(p.x, p.y, anX, anY, `aₙ ${normalAcceleration.toFixed(2)}`, '#eab308', 7.0);
+      }
+
+      drawMeteor(p.x, p.y, projectile.vx, vyNow);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawSceneryBackground();
+      drawGrid();
+      drawPredictionPath();
+      drawPath();
+      drawTarget();
+      drawCannon();
+      drawProjectile();
+      drawHitStars();
+    }
+
+    function pointToSegmentDistance(px, py, ax, ay, bx, by) {
+      const abx = bx - ax;
+      const aby = by - ay;
+      const apx = px - ax;
+      const apy = py - ay;
+      const abLengthSquared = abx * abx + aby * aby;
+      if (abLengthSquared === 0) return Math.sqrt((px - ax) ** 2 + (py - ay) ** 2);
+      let u = (apx * abx + apy * aby) / abLengthSquared;
+      u = Math.max(0, Math.min(1, u));
+      const closestX = ax + u * abx;
+      const closestY = ay + u * aby;
+      return Math.sqrt((px - closestX) ** 2 + (py - closestY) ** 2);
+    }
+
+    function fire() {
+      cancelAnimationFrame(animationId);
+      lastFrameTime = null;
+      paused = false;
+      const angle = Number(angleInput.value) * Math.PI / 180;
+      const speed = Number(speedInput.value);
+
+      projectile = {
+        t: 0,
+        x: 0,
+        y: 0,
+        vx: speed * Math.cos(angle),
+        vy0: speed * Math.sin(angle),
+        lastVy: speed * Math.sin(angle),
+        apexPaused: false,
+        hit: false
+      };
+      path = [];
+      hitStars = [];
+      heightText.textContent = '0.00 m';
+      distanceText.textContent = '0.00 m';
+      statusText.textContent = '砲彈從原點 O(0,0) 發射，飛行中會即時顯示水平距離 x 與鉛直高度 y。';
+      animationId = requestAnimationFrame(animate);
+    }
+
+    function animate(timestamp) {
+      if (!projectile) return;
+
+      if (lastFrameTime === null) lastFrameTime = timestamp;
+      const deltaTime = (timestamp - lastFrameTime) / 1000;
+      lastFrameTime = timestamp;
+
+      if (paused) {
+        draw();
+        animationId = requestAnimationFrame(animate);
+        return;
+      }
+
+      const scaledDelta = deltaTime * Number(timeScaleInput.value);
+      projectile.t += scaledDelta;
+
+      const t = projectile.t;
+      projectile.x = projectile.vx * t;
+      projectile.y = projectile.vy0 * t - 0.5 * g * t * t;
+      const vyNow = projectile.vy0 - g * t;
+
+      if (apexPauseEnabled && !projectile.apexPaused && projectile.lastVy > 0 && vyNow <= 0) {
+        const apexTime = projectile.vy0 / g;
+        projectile.t = apexTime;
+        projectile.x = projectile.vx * apexTime;
+        projectile.y = projectile.vy0 * apexTime - 0.5 * g * apexTime * apexTime;
+        projectile.apexPaused = true;
+        paused = true;
+        lastFrameTime = null;
+
+        const apexSpeed = Math.abs(projectile.vx);
+        timeText.textContent = apexTime.toFixed(2) + ' s';
+        heightText.textContent = projectile.y.toFixed(2) + ' m';
+        distanceText.textContent = projectile.x.toFixed(2) + ' m';
+        vText.textContent = apexSpeed.toFixed(2) + ' m/s';
+        vtText.textContent = apexSpeed.toFixed(2) + ' m/s';
+        vyNowText.textContent = '0.00 m/s';
+        gValueText.textContent = g.toFixed(2) + ' m/s²';
+        atText.textContent = '0.00 m/s²';
+        anText.textContent = g.toFixed(2) + ' m/s²';
+
+        draw();
+        statusText.textContent = `已在最高點自動暫停：vy = 0，高度 ${projectile.y.toFixed(2)} m，水平距離 ${projectile.x.toFixed(2)} m。`;
+        animationId = requestAnimationFrame(animate);
+        return;
+      }
+
+      projectile.lastVy = vyNow;
+      const speedNow = Math.sqrt(projectile.vx ** 2 + vyNow ** 2);
+      const tangentAcceleration = speedNow === 0 ? 0 : (-g * vyNow / speedNow);
+      const normalAcceleration = speedNow === 0 ? 0 : (g * Math.abs(projectile.vx) / speedNow);
+
+      const previousPoint = path.length > 0 ? path[path.length - 1] : worldToCanvas(0, 0);
+      const p = worldToCanvas(projectile.x, projectile.y);
+      path.push(p);
+
+      timeText.textContent = t.toFixed(2) + ' s';
+      heightText.textContent = Math.max(projectile.y, 0).toFixed(2) + ' m';
+      distanceText.textContent = Math.max(projectile.x, 0).toFixed(2) + ' m';
+      vxText.textContent = projectile.vx.toFixed(2) + ' m/s';
+      vyNowText.textContent = vyNow.toFixed(2) + ' m/s';
+      vtText.textContent = speedNow.toFixed(2) + ' m/s';
+      vText.textContent = speedNow.toFixed(2) + ' m/s';
+      gValueText.textContent = g.toFixed(2) + ' m/s²';
+      atText.textContent = tangentAcceleration.toFixed(2) + ' m/s²';
+      anText.textContent = normalAcceleration.toFixed(2) + ' m/s²';
+
+      // 命中判定：
+      // 精準模式：砲彈「質點中心」進入標靶圓形範圍。
+      // 遊戲模式：砲彈視為具有半徑，外緣碰到標靶範圍即算命中。
+      const centerDistance = targetVisible ? pointToSegmentDistance(target.x, target.y, previousPoint.x, previousPoint.y, p.x, p.y) : Infinity;
+      const hitThreshold = hitMode === 'radius' ? target.r + projectileCanvasRadius : target.r;
+      if (targetVisible && centerDistance <= hitThreshold) {
+        projectile.hit = true;
+        const targetWorld = canvasToWorld(target.x, target.y);
+        lastHitInfo = {
+          angle: Number(angleInput.value),
+          speed: Number(speedInput.value),
+          gravity: g,
+          time: t,
+          x: projectile.x,
+          y: projectile.y,
+          targetX: targetWorld.x,
+          targetY: targetWorld.y
+        };
+        if (inquiryMode) {
+          taskHitRecords[currentTaskIndex].push(lastHitInfo);
+        }
+        createHitStars(target.x, target.y);
+        draw();
+        const hitModeLabel = hitMode === 'radius' ? '遊戲模式命中' : '質點中心命中';
+        statusText.textContent = inquiryMode
+          ? `🎉 ${hitModeLabel}成功！已紀錄角度 ${lastHitInfo.angle.toFixed(2)}°。請填寫本題紀錄與觀察敘述。`
+          : `🎉 恭喜！${hitModeLabel}目標！飛行時間：${t.toFixed(2)} s`;
+        return;
+      }
+
+      draw();
+
+      if (projectile.y < 0) {
+        const landingTime = (2 * projectile.vy0) / g;
+        projectile.t = landingTime;
+        projectile.x = projectile.vx * landingTime;
+        projectile.y = 0;
+        const landingVy = projectile.vy0 - g * landingTime;
+        const landingSpeed = Math.sqrt(projectile.vx ** 2 + landingVy ** 2);
+        const landingAt = landingSpeed === 0 ? 0 : (-g * landingVy / landingSpeed);
+        const landingAn = landingSpeed === 0 ? 0 : (g * Math.abs(projectile.vx) / landingSpeed);
+
+        timeText.textContent = landingTime.toFixed(2) + ' s';
+        heightText.textContent = '0.00 m';
+        distanceText.textContent = projectile.x.toFixed(2) + ' m';
+        vxText.textContent = projectile.vx.toFixed(2) + ' m/s';
+        vyNowText.textContent = landingVy.toFixed(2) + ' m/s';
+        vtText.textContent = landingSpeed.toFixed(2) + ' m/s';
+        vText.textContent = landingSpeed.toFixed(2) + ' m/s';
+        gValueText.textContent = g.toFixed(2) + ' m/s²';
+        atText.textContent = landingAt.toFixed(2) + ' m/s²';
+        anText.textContent = landingAn.toFixed(2) + ' m/s²';
+
+        lastLandingInfo = {
+          angle: Number(angleInput.value),
+          speed: Number(speedInput.value),
+          gravity: g,
+          time: landingTime,
+          x: projectile.x,
+          y: 0,
+          targetX: canvasToWorld(target.x, target.y).x,
+          targetY: canvasToWorld(target.x, target.y).y
+        };
+        if (inquiryMode) {
+          taskLandingRecords[currentTaskIndex].push(lastLandingInfo);
+        }
+        draw();
+        statusText.textContent = `落地（理論精準）：T=${landingTime.toFixed(2)} s，水平距離 x=${projectile.x.toFixed(2)} m`;
+        return;
+      }
+
+      if (p.x > canvas.width + 50 || p.y > canvas.height + 50) {
+        draw();
+        statusText.textContent = '砲彈已飛出畫面。請調整角度、速度或標靶位置後再試一次。';
+        return;
+      }
+
+      animationId = requestAnimationFrame(animate);
+    }
+
+    function reset() {
+      cancelAnimationFrame(animationId);
+      lastFrameTime = null;
+      paused = false;
+      projectile = null;
+      path = [];
+      hitStars = [];
+      statusText.textContent = '已重設。調整角度與速度後，按下「發射砲彈」。';
+      updateLabels();
+    }
+
+    function getMousePos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      const m = getMousePos(e);
+      const dx = m.x - target.x;
+      const dy = m.y - target.y;
+      if (Math.sqrt(dx * dx + dy * dy) <= target.r + 10) draggingTarget = true;
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!draggingTarget) return;
+      const m = getMousePos(e);
+      target.x = Math.max(cannon.x + 80, Math.min(cannon.x + xMax * scaleX, m.x));
+      target.y = Math.max(groundY - yMax * scaleY, Math.min(groundY, m.y));
+      const tw = canvasToWorld(target.x, target.y);
+      syncTargetInputs(tw.x, tw.y);
+      draw();
+    });
+
+    canvas.addEventListener('mouseup', () => draggingTarget = false);
+    canvas.addEventListener('mouseleave', () => draggingTarget = false);
+
+    angleInput.addEventListener('input', updateLabels);
+    speedInput.addEventListener('input', updateLabels);
+    gInput.addEventListener('input', updateLabels);
+    timeScaleInput.addEventListener('input', updateLabels);
+    // 速度總開關：勾選時全部顯示，取消時全部隱藏
+    showVelocityInput.addEventListener('change', () => {
+      const state = showVelocityInput.checked;
+      show_vt.checked = state;
+      show_vx.checked = state;
+      show_vy.checked = state;
+      draw();
+    });
+
+    // 加速度總開關：勾選時全部顯示，取消時全部隱藏
+    showAccelerationInput.addEventListener('change', () => {
+      const state = showAccelerationInput.checked;
+      show_g.checked = state;
+      show_at.checked = state;
+      show_an.checked = state;
+      draw();
+    });
+
+    // 子開關：可單獨關閉或開啟某一個箭頭，不強制改變總開關
+    [show_vt, show_vx, show_vy, show_g, show_at, show_an].forEach(input => {
+      input.addEventListener('change', draw);
+    });
+    fireBtn.addEventListener('click', fire);
+    pauseBtn.addEventListener('click', () => {
+      if (!projectile) return;
+      paused = !paused;
+      lastFrameTime = null;
+      statusText.textContent = paused ? '已暫停：可觀察速度與加速度向量。' : '繼續飛行中……';
+    });
+    apexPauseBtn.addEventListener('click', () => {
+      apexPauseEnabled = !apexPauseEnabled;
+      apexPauseBtn.textContent = apexPauseEnabled ? '最高點自動暫停：開' : '最高點自動暫停：關';
+      statusText.textContent = apexPauseEnabled ? '已開啟最高點自動暫停。' : '已關閉最高點自動暫停。';
+    });
+    resetBtn.addEventListener('click', reset);
+
+    hitModeInputs.forEach(input => {
+      input.addEventListener('change', () => {
+        hitMode = input.value;
+        statusText.textContent = hitMode === 'radius'
+          ? '已切換為遊戲模式：砲彈外緣碰到標靶即算命中。'
+          : '已切換為精準模式：砲彈質點中心進入標靶才算命中。';
+      });
+    });
+    setTargetByCoordBtn.addEventListener('click', setTargetFromInputs);
+    targetXInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') setTargetFromInputs(); });
+    targetYInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') setTargetFromInputs(); });
+    showPredictionInput.addEventListener('change', draw);
+    startInquiryBtn.addEventListener('click', () => loadInquiryTask(0));
+    toggleInquiryPanelBtn.addEventListener('click', toggleInquiryPanel);
+    closeInquiryPanelBtn.addEventListener('click', closeInquiryPanel);
+    drawerBackdrop.addEventListener('click', closeInquiryPanel);
+    drawerTab.addEventListener('click', openInquiryPanel);
+    freeModeBtn.addEventListener('click', () => {
+      inquiryMode = false;
+      targetVisible = true;
+      inquirySection.classList.remove('open');
+      drawerBackdrop.classList.remove('open');
+      drawerTab.style.display = 'none';
+      inquirySection.style.display = 'none';
+      updateInquiryModeButtons();
+      statusText.textContent = '已回到自由探索模式。可自由拖曳標靶、輸入座標與調整參數。';
+      reset();
+      updateInquiryModeButtons();
+    });
+    loadTaskBtn.addEventListener('click', () => loadInquiryTask(currentTaskIndex));
+    prevTaskBtn.addEventListener('click', () => loadInquiryTask(currentTaskIndex - 1));
+    nextTaskBtn.addEventListener('click', () => loadInquiryTask(currentTaskIndex + 1));
+    submitTaskBtn.addEventListener('click', submitCurrentTask);
+    printPdfBtn.addEventListener('click', () => {
+      buildPrintSheet();
+      window.print();
+    });
+
+    // 高一版本：預設隱藏進階的切線/法線加速度，降低認知負擔。
+    show_at.checked = false;
+    show_an.checked = false;
+
+    syncTargetInputs(canvasToWorld(target.x, target.y).x, canvasToWorld(target.x, target.y).y);
+    updateLabels();
+    updateInquiryModeButtons();
+  </script>
+</body>
+</html>

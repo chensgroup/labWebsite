@@ -144,8 +144,11 @@
 
   const clickableCards = document.querySelectorAll('.person-card');
   clickableCards.forEach(card => {
-    const name = card.querySelector('strong').textContent;
-    card.addEventListener('click', () => openModal(name));
+    const name = card.dataset.name || card.querySelector('strong')?.textContent || '';
+    card.addEventListener('click', e => {
+      e.preventDefault();
+      openModal(name);
+    });
     card.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();

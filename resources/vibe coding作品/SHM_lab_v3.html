@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>口袋裡的物理實驗室 - 簡諧運動投影與匹配</title>
+    <style>
+        :root {
+            /* Modern Theme */
+            --bg-color: #eef2f5;
+            --panel-bg: #ffffff;
+            --text-color: #2c3e50;
+            --accent-color: #3498db;
+            --border-color: #dcdde1;
+            --canvas-bg: #f8f9fa;
+            --x-color: #2ecc71;
+            --v-color: #e74c3c;
+            --a-color: #9b59b6;
+            --shadow-color: #7f8c8d;
+            --font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        [data-theme="blackboard"] {
+            /* Blackboard Theme */
+            --bg-color: #1a2a22;
+            --panel-bg: #22382c;
+            --text-color: #f0f0f0;
+            --accent-color: #f1c40f;
+            --border-color: #34493d;
+            --canvas-bg: #1a2a22;
+            --x-color: #2ecc71;
+            --v-color: #ff6b6b;
+            --a-color: #a29bfe;
+            --shadow-color: #b2bec3;
+            --font-family: 'Chalkboard SE', 'Comic Sans MS', cursive, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: 280px 1fr 500px;
+            gap: 15px;
+            height: 100vh;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            overflow-x: hidden;
+            font-size: 18px;
+        }
+
+        body.learning-collapsed {
+            grid-template-columns: 280px 1fr 60px;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            overflow-y: auto;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+            min-height: 500px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin-top: 0;
+        }
+
+        h2 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.02);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        [data-theme="blackboard"] .control-group {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="range"] {
+            flex-grow: 1;
+            accent-color: var(--accent-color);
+            cursor: pointer;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 0;
+        }
+
+        .btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            transition: opacity 0.2s, transform 0.1s;
+            width: 100%;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-color);
+            border: 2px solid var(--border-color);
+            box-shadow: none;
+        }
+
+        .canvas-container {
+            background: var(--canvas-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+            flex-grow: 1;
+        }
+
+        .math-display {
+            background: rgba(0, 0, 0, 0.03);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            line-height: 1.8;
+            overflow-x: auto;
+        }
+
+        [data-theme="blackboard"] .math-display {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .cloze-select {
+            background: var(--panel-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 18px;
+            margin: 2px 0;
+            cursor: pointer;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: var(--panel-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            box-sizing: border-box;
+            resize: vertical;
+            margin-top: 10px;
+            font-family: inherit;
+            font-size: 18px;
+        }
+
+        .learning-sheet {
+            font-size: 18px;
+            padding-top: 60px;
+        }
+
+        .hint-box {
+            background: rgba(241, 196, 15, 0.15);
+            padding: 15px;
+            border-left: 5px solid #f1c40f;
+            border-radius: 6px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+
+        .match-status {
+            text-align: center;
+            font-weight: bold;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+            font-size: 1.1em;
+        }
+
+        .match-success {
+            background: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+            border: 2px solid #2ecc71;
+        }
+
+        .match-fail {
+            background: rgba(231, 76, 60, 0.2);
+            color: #c0392b;
+            border: 2px solid #e74c3c;
+        }
+
+        [data-theme="blackboard"] .match-success {
+            color: #2ecc71;
+        }
+
+        [data-theme="blackboard"] .match-fail {
+            color: #ff6b6b;
+        }
+
+        .learning-sheet-content {
+            transition: opacity 0.3s;
+            width: 100%;
+        }
+
+        .learning-collapsed .learning-sheet-content {
+            display: none;
+        }
+
+        .learning-collapsed .panel.learning-sheet {
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .collapsed-hint {
+            display: none;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-weight: bold;
+            color: var(--accent-color);
+            white-space: nowrap;
+            letter-spacing: 3px;
+            font-size: 22px;
+        }
+
+        .learning-collapsed .collapsed-hint {
+            display: block;
+        }
+
+        .toggle-sheet-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            z-index: 10;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-sheet-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .learning-collapsed .toggle-sheet-btn {
+            display: none;
+        }
+
+        [data-theme="blackboard"] .toggle-sheet-btn {
+            background: var(--panel-bg);
+            color: var(--accent-color);
+            border: 2px solid var(--accent-color);
+        }
+
+        .val-num {
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        @media (max-width: 1200px) {
+            body {
+                grid-template-columns: 280px 1fr;
+                grid-template-rows: auto auto;
+                height: auto;
+                overflow-y: auto;
+            }
+
+            body.learning-collapsed {
+                grid-template-columns: 280px 1fr;
+            }
+
+            .panel.learning-sheet {
+                grid-column: 1 / -1;
+                height: auto;
+                padding-top: 20px;
+            }
+
+            .toggle-sheet-btn {
+                display: none;
+            }
+
+            .learning-collapsed .learning-sheet-content {
+                display: block;
+                opacity: 1;
+            }
+
+            .learning-collapsed .collapsed-hint {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .main-content {
+                min-height: 600px;
+            }
+        }
+
+        @media print {
+            body {
+                display: block;
+                background: white;
+                color: black;
+                height: auto;
+                padding: 0;
+                font-size: 14px;
+            }
+
+            .sidebar,
+            .toggle-sheet-btn {
+                display: none !important;
+            }
+
+            .main-content {
+                display: block;
+                height: auto;
+                min-height: auto;
+                margin-bottom: 20px;
+            }
+
+            .canvas-container {
+                border: 1px solid #ccc;
+                height: 400px;
+                page-break-inside: avoid;
+            }
+
+            .panel.learning-sheet {
+                display: block;
+                border: 1px solid #ccc;
+                box-shadow: none;
+                width: 100%;
+                margin: 0;
+                padding: 20px;
+                page-break-inside: avoid;
+                font-size: 14px;
+            }
+
+            [data-theme="blackboard"] {
+                background: white;
+                color: black;
+            }
+
+            textarea {
+                border: 1px solid #999;
+            }
+        }
+
+        /* 提示燈泡與氣泡容器 */
+        .hint-container {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 10px;
+            position: relative;
+            vertical-align: middle;
+        }
+
+        /* 💡 燈泡微動畫與懸停效果 */
+        .hint-bulb {
+            cursor: pointer;
+            font-size: 1.1em;
+            display: inline-block;
+            transition: transform 0.2s, filter 0.2s;
+            animation: pulse-bulb 2s infinite alternate;
+        }
+
+        .hint-bulb:hover {
+            transform: scale(1.25);
+            filter: drop-shadow(0 0 6px #f1c40f);
+        }
+
+        @keyframes pulse-bulb {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.1); opacity: 1; filter: drop-shadow(0 0 2px rgba(241, 196, 15, 0.6)); }
+        }
+
+        /* 提示氣泡樣式 */
+        .hint-tooltip {
+            position: absolute;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%) scale(0.9);
+            background: rgba(44, 62, 80, 0.95);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+        }
+
+        [data-theme="blackboard"] .hint-tooltip {
+            background: rgba(34, 56, 44, 0.95);
+            border: 1px solid var(--border-color);
+        }
+
+        .hint-container:hover .hint-tooltip {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+
+        /* 提示氣泡的三角形指針 */
+        .hint-tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent;
+        }
+
+        [data-theme="blackboard"] .hint-tooltip::after {
+            border-color: rgba(34, 56, 44, 0.95) transparent transparent transparent;
+        }
+
+        /* 倒數計時文字 */
+        .hint-countdown-timer {
+            font-size: 0.9em;
+            color: #e67e22;
+            font-weight: bold;
+            margin-left: 5px;
+            font-family: monospace;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script>
+        MathJax = { tex: { inlineMath: [['\\(', '\\)'], ['$', '$']] }, svg: { fontCache: 'global' } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+
+    <div class="panel sidebar">
+        <h2>⚙️ 實驗控制板</h2>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <button class="btn btn-outline" id="themeToggle" style="margin-bottom:0;">切換黑板</button>
+            <button class="btn btn-outline" id="resetBtn" style="margin-bottom:0;">重置時間</button>
+        </div>
+
+        <button class="btn" id="playPauseBtn">暫停 (Pause)</button>
+
+        <div class="control-group">
+            <label>時間拖曳軸 (t = <span id="tDisplay">0.00</span> T)</label>
+            <div class="slider-row">
+                <input type="range" id="timeSlider" min="0" max="1" step="0.005" value="0">
+                <input type="number" id="timeInput" min="0" max="1" step="0.1" value="0.0"
+                    style="width: 60px; font-size: 16px; border-radius: 4px; border: 1px solid var(--border-color); padding: 4px;">
+            </div>
+        </div>
+
+        <div class="control-group" style="border-left: 4px solid var(--shadow-color);">
+            <label>【頂部投影源】</label>
+            <label>圓周角速度 (ω) = <span id="wDisplay">2.0</span> rad/s</label>
+            <div class="slider-row">
+                <input type="range" id="wSlider" min="1.0" max="5.0" step="0.5" value="2.0">
+            </div>
+            <label style="margin-top:5px;">圓周半徑 (R) = <span id="rDisplay">1.0</span> m</label>
+            <div class="slider-row">
+                <input type="range" id="rSlider" min="0.5" max="2.0" step="0.1" value="1.0">
+            </div>
+        </div>
+
+        <div class="control-group" style="border-left: 4px solid var(--accent-color);">
+            <label>【底部真實彈簧系統】</label>
+            <label>彈簧常數 (k) = <span id="kDisplay">4.0</span> N/m</label>
+            <div class="slider-row">
+                <input type="range" id="kSlider" min="1" max="50" step="1" value="4">
+            </div>
+            <label style="margin-top:5px;">質量 (m) = <span id="mDisplay">1.0</span> kg</label>
+            <div class="slider-row">
+                <input type="range" id="mSlider" min="1" max="10" step="1" value="1">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>顯示彈簧球向量 (Vectors)</label>
+            <div class="checkbox-group">
+                <label style="color: var(--x-color)"><input type="checkbox" id="showX" checked> 位置 (x)</label>
+                <label style="color: var(--v-color)"><input type="checkbox" id="showV" checked> 速度 (v)</label>
+                <label style="color: var(--a-color)"><input type="checkbox" id="showA" checked> 加速度 (a)</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="canvas-container" id="p5container" style="position: relative;">
+            <!-- p5.js canvas -->
+            <div id="thetaLabel"
+                style="position: absolute; pointer-events: none; transform: translate(-50%, -50%); font-size: 20px;">
+                \(\theta\)</div>
+        </div>
+    </div>
+
+    <div class="panel learning-sheet" id="learningSheetPanel">
+        <button class="toggle-sheet-btn" id="toggleSheetBtn" title="收合學習單">➡️</button>
+
+        <div class="collapsed-hint">👉 點此展開學習單</div>
+
+        <div class="learning-sheet-content">
+            <h2>📝 探究學習單</h2>
+
+            <div class="hint-box" style="border-left-color: #3498db; background: rgba(52, 152, 219, 0.1);">
+                <strong>🔍 STEP 1: 觀察提示</strong><br>
+                請先觀察上方圓周運動所產生的「灰色影子」，以及下方真實「綠色彈簧球」的運動狀態。它們現在的速度和週期一樣嗎？
+            </div>
+
+            <div class="hint-box" style="border-left-color: #e67e22; background: rgba(230, 126, 34, 0.1);">
+                <strong>🧪 STEP 2: 改變變因</strong><br>
+                <strong>預測：</strong>如果我們將彈簧質量 $m$ 變為原本的 4 倍，彈簧球的震盪會變快還是變慢？<br>
+                <strong>實作：</strong>請調整左側的「彈簧常數 \(k\)」與「質量 \(m\)」，試著讓底部的真實彈簧球，能夠跟上方的「灰色影子」完美重合！
+            </div>
+
+            <div id="matchStatus" class="match-status match-fail">
+                ❌ 尚未同步 (\(\omega \neq \sqrt{k/m}\))
+            </div>
+
+            <div class="math-display">
+                <strong>即時物理數據:</strong><br>
+                \( x_c(t) = R \cos(\omega t) \) = <span class="val-num" style="color:var(--shadow-color)"
+                    id="val_xc">1.00</span> m<br>
+                \( x_s(t) = R \cos(\omega_0 t) \) = <span class="val-num" style="color:var(--x-color)"
+                    id="val_xs">1.00</span> m<br>
+                \( v_s(t) = -R \omega_0 \sin(\omega_0 t) \) = <span class="val-num" style="color:var(--v-color)"
+                    id="val_vs">0.00</span> m/s<br>
+                \( a_s(t) = -R \omega_0^2 \cos(\omega_0 t) \) = <span class="val-num" style="color:var(--a-color)"
+                    id="val_as">-4.00</span> m/s\(^2\)
+            </div>
+
+            <div class="hint-box" style="border-left-color: #2ecc71; background: rgba(46, 204, 113, 0.1);">
+                <strong>👀 STEP 3: 觀察現象</strong><br>
+                在完美同步的狀態下，觀察彈簧球的向量變化：<br>
+                當位移 (\(x\)) 達到端點最大值時，速度 (\(v\)) 為
+                <select class="cloze-select">
+                    <option value="">請選擇</option>
+                    <option value="0">0 (靜止)</option>
+                    <option value="最大">最大值</option>
+                </select>，<br>
+                加速度 (\(a\)) 的方向永遠
+                <select class="cloze-select">
+                    <option value="">請選擇</option>
+                    <option value="指向平衡點">指向平衡點</option>
+                    <option value="遠離平衡點">遠離平衡點</option>
+                </select>。
+            </div>
+
+            <div class="hint-box" style="border-left-color: #9b59b6; background: rgba(155, 89, 182, 0.1);">
+                <strong>💡 STEP 4: 發現規律</strong><br>
+                當我成功讓彈簧球與影子同步時，我發現投影源的角速度 \( \omega \) 會等於彈簧系統的
+                <select class="cloze-select">
+                    <option>請選擇</option>
+                    <option>k / m</option>
+                    <option>√(k / m)</option>
+                    <option>m / k</option>
+                </select>。<br>
+                這證明了等速率圓周運動的水平投影，在數學上就是簡諧運動！
+            </div>
+
+            <div>
+                <p><strong>✍️ 綜合心得：</strong></p>
+                <textarea placeholder="寫下你在配對過程中觀察到的現象，或是公式推導的理解..."></textarea>
+            </div>
+
+            <button class="btn" style="margin-top: 20px;" onclick="window.print()">🖨️ 列印學習單</button>
+        </div>
+    </div>
+
+    <script>
+        // Global Physics Variables
+        let state = {
+            isPlaying: true,
+            phase: 0,
+            t: 0,
+            R: 1.0,
+            w: 2.0,
+            k: 4.0,
+            m: 1.0,
+            w0: 2.0,
+            xc: 1.0,
+            xs: 1.0,
+            vs: 0,
+            as: -4.0,
+            // 提示倒數狀態
+            countdownStarted: false,
+            countdownSeconds: 45,
+            hintUnlocked: false,
+            countdownInterval: null
+        };
+
+        let scaleFactor = 100;
+
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const timeSlider = document.getElementById('timeSlider');
+        const timeInput = document.getElementById('timeInput');
+        const tDisplay = document.getElementById('tDisplay');
+
+        const rSlider = document.getElementById('rSlider');
+        const rDisplay = document.getElementById('rDisplay');
+        const wSlider = document.getElementById('wSlider');
+        const wDisplay = document.getElementById('wDisplay');
+
+        const kSlider = document.getElementById('kSlider');
+        const kDisplay = document.getElementById('kDisplay');
+        const mSlider = document.getElementById('mSlider');
+        const mDisplay = document.getElementById('mDisplay');
+
+        const matchStatus = document.getElementById('matchStatus');
+
+        const val_xc = document.getElementById('val_xc');
+        const val_xs = document.getElementById('val_xs');
+        const val_vs = document.getElementById('val_vs');
+        const val_as = document.getElementById('val_as');
+
+        const showXCheck = document.getElementById('showX');
+        const showVCheck = document.getElementById('showV');
+        const showACheck = document.getElementById('showA');
+
+        const themeToggle = document.getElementById('themeToggle');
+        const toggleSheetBtn = document.getElementById('toggleSheetBtn');
+        const learningSheetPanel = document.getElementById('learningSheetPanel');
+
+        function randomizeInitialState() {
+            function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+            function getRandomStep(min, max, step) {
+                let steps = Math.floor((max - min) / step);
+                return min + Math.floor(Math.random() * (steps + 1)) * step;
+            }
+            do {
+                state.w = getRandomStep(1.0, 5.0, 0.5);
+                state.k = getRandomInt(1, 50);
+                state.m = getRandomInt(1, 10);
+            } while (Math.abs(state.w - Math.sqrt(state.k / state.m)) < 0.01);
+
+            wSlider.value = state.w;
+            kSlider.value = state.k;
+            mSlider.value = state.m;
+        }
+        randomizeInitialState();
+
+        let isBlackboard = false;
+        themeToggle.addEventListener('click', () => {
+            isBlackboard = !isBlackboard;
+            if (isBlackboard) {
+                document.body.setAttribute('data-theme', 'blackboard');
+                themeToggle.innerText = '切換現代模式';
+            } else {
+                document.body.removeAttribute('data-theme');
+                themeToggle.innerText = '切換黑板模式';
+            }
+        });
+
+        let isCollapsed = false;
+        function toggleSheet(e) {
+            if (window.innerWidth <= 1200) return;
+            isCollapsed = !isCollapsed;
+            if (isCollapsed) {
+                document.body.classList.add('learning-collapsed');
+            } else {
+                document.body.classList.remove('learning-collapsed');
+            }
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+            }, 300);
+            if (e) e.stopPropagation();
+        }
+        toggleSheetBtn.addEventListener('click', toggleSheet);
+
+        learningSheetPanel.addEventListener('click', (e) => {
+            if (isCollapsed && window.innerWidth > 1200) {
+                toggleSheet(e);
+            }
+        });
+
+        playPauseBtn.addEventListener('click', () => {
+            state.isPlaying = !state.isPlaying;
+            playPauseBtn.innerText = state.isPlaying ? "暫停 (Pause)" : "播放 (Play)";
+        });
+
+        resetBtn.addEventListener('click', () => {
+            state.phase = 0;
+            timeSlider.value = 0;
+            timeInput.value = '0.0';
+            updatePhysics();
+            if (!state.isPlaying) {
+                if (window.drawCanvas) window.drawCanvas();
+            }
+        });
+
+        timeSlider.addEventListener('input', (e) => {
+            state.isPlaying = false;
+            playPauseBtn.innerText = "播放 (Play)";
+            state.phase = parseFloat(e.target.value);
+            timeInput.value = state.phase.toFixed(1);
+            updatePhysics();
+            if (window.drawCanvas) window.drawCanvas();
+        });
+
+        timeInput.addEventListener('change', (e) => {
+            state.isPlaying = false;
+            playPauseBtn.innerText = "播放 (Play)";
+            let val = parseFloat(e.target.value);
+            if (isNaN(val) || val < 0) val = 0;
+            // 四捨五入至小數點後一位
+            val = Math.max(0, Math.min(1, Math.round(val * 10) / 10));
+            e.target.value = val.toFixed(1);
+            timeSlider.value = val;
+            state.phase = val;
+            updatePhysics();
+            if (window.drawCanvas) window.drawCanvas();
+        });
+
+        function updateParams() {
+            state.R = parseFloat(rSlider.value);
+            state.w = parseFloat(wSlider.value);
+            state.k = parseFloat(kSlider.value);
+            state.m = parseFloat(mSlider.value);
+
+            state.w0 = Math.sqrt(state.k / state.m);
+
+            rDisplay.innerText = state.R.toFixed(1);
+            wDisplay.innerText = state.w.toFixed(1);
+            kDisplay.innerText = state.k.toFixed(1);
+            mDisplay.innerText = state.m.toFixed(1);
+
+            updatePhysics();
+        }
+        rSlider.addEventListener('input', updateParams);
+        wSlider.addEventListener('input', updateParams);
+        kSlider.addEventListener('input', updateParams);
+        mSlider.addEventListener('input', updateParams);
+
+        // 狀態追蹤與彩紙粒子變數
+        let wasMatched = false;
+        let shouldSpawnConfetti = false;
+        let confettis = [];
+
+        // 彩紙粒子類別
+        class Confetti {
+            constructor(p, x, y) {
+                this.p = p;
+                this.x = x;
+                this.y = y;
+                this.vx = p.random(-5, 5);
+                this.vy = p.random(-12, -4); // 向上噴射
+                this.size = p.random(6, 12);
+                p.push();
+                p.colorMode(p.HSL);
+                this.color = p.color(p.random(360), 85, 60); // 隨機 HSL 色調
+                p.pop();
+                this.gravity = 0.3;
+                this.alpha = 255;
+                this.fadeSpeed = p.random(4, 8);
+                this.rotation = p.random(p.TWO_PI);
+                this.rotationSpeed = p.random(-0.1, 0.1);
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.alpha -= this.fadeSpeed;
+                this.rotation += this.rotationSpeed;
+            }
+
+            draw() {
+                this.p.push();
+                this.p.translate(this.x, this.y);
+                this.p.rotate(this.rotation);
+                // 確保 alpha 透明度生效
+                let c = this.p.color(this.p.red(this.color), this.p.green(this.color), this.p.blue(this.color), this.alpha);
+                this.p.fill(c);
+                this.p.noStroke();
+                this.p.rectMode(this.p.CENTER);
+                this.p.rect(0, 0, this.size, this.size);
+                this.p.pop();
+            }
+
+            isDead() {
+                return this.alpha <= 0;
+            }
+        }
+
+        function updatePhysics() {
+            let T_c = (2 * Math.PI) / state.w;
+            state.t = state.phase * T_c;
+
+            state.xc = state.R * Math.cos(state.w * state.t);
+            state.xs = state.R * Math.cos(state.w0 * state.t);
+            state.vs = -state.R * state.w0 * Math.sin(state.w0 * state.t);
+            state.as = -state.R * state.w0 * state.w0 * Math.cos(state.w0 * state.t);
+
+            tDisplay.innerText = state.phase.toFixed(2);
+
+            val_xc.innerText = state.xc.toFixed(2);
+            val_xs.innerText = state.xs.toFixed(2);
+            val_vs.innerText = state.vs.toFixed(2);
+            val_as.innerText = state.as.toFixed(2);
+
+            let isMatch = Math.abs(state.w - state.w0) < 0.01;
+            let matchClass = isMatch ? 'match-status match-success' : 'match-status match-fail';
+            let matchText = isMatch ? '✅ 完美同步' : '❌ 尚未同步';
+            
+            let newHTML;
+            if (isMatch) {
+                let fSpring = state.k * state.R;
+                let fCent = state.m * state.R * state.w * state.w;
+                let eqTex = `\\begin{cases} |F| = |-kR| = ${fSpring.toFixed(1)} \\text{ N} \\\\ F = mR\\omega^2 = ${fCent.toFixed(1)} \\text{ N} \\end{cases}`;
+                newHTML = `${matchText}<br><div style="margin-top: 10px;">\\( ${eqTex} \\)</div>`;
+            } else if (state.hintUnlocked) {
+                let fSpring = state.k * state.R;
+                let fCent = state.m * state.R * state.w * state.w;
+                let eqTex = `\\begin{cases} |F| = |-kR| = ${fSpring.toFixed(1)} \\text{ N} \\\\ F = mR\\omega^2 = ${fCent.toFixed(1)} \\text{ N} \\end{cases}`;
+                newHTML = `${matchText}<br><div style="margin-top: 10px;">\\( ${eqTex} \\)</div>`;
+            } else {
+                newHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span>${matchText}</span>
+                        <span class="hint-container" id="hintContainer">
+                            <span class="hint-bulb" id="hintBulb">💡</span>
+                            <span class="hint-countdown-timer" id="hintTimerDisplay"></span>
+                            <div class="hint-tooltip" id="hintTooltip">懸停以開始倒數並解鎖提示</div>
+                        </span>
+                    </div>
+                `;
+            }
+
+            if (matchStatus.dataset.rawHtml !== newHTML) {
+                matchStatus.className = matchClass;
+                matchStatus.innerHTML = newHTML;
+                matchStatus.dataset.rawHtml = newHTML;
+                
+                // 尚未同步時重新綁定事件與初始化狀態
+                if (!isMatch && !state.hintUnlocked) {
+                    initHintSystem();
+                }
+
+                if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([matchStatus]);
+            }
+
+            // 觸發彩紙粒子的時機點
+            if (isMatch && !wasMatched) {
+                shouldSpawnConfetti = true;
+            }
+            wasMatched = isMatch;
+        }
+
+        // 更新計時器與提示 UI
+        const updateTimerUI = (displayEl, tooltipEl) => {
+            if (!displayEl || !tooltipEl) return;
+            if (state.hintUnlocked) {
+                displayEl.innerText = '';
+                tooltipEl.innerText = '提示已解鎖';
+            } else {
+                displayEl.innerText = `(${state.countdownSeconds}s)`;
+                tooltipEl.innerText = `提示將於 ${state.countdownSeconds} 秒後解鎖（剩餘 ${state.countdownSeconds} 秒）`;
+            }
+        };
+
+        // 啟動定時器
+        const startTimerInterval = () => {
+            if (state.countdownInterval) {
+                clearInterval(state.countdownInterval);
+            }
+            state.countdownInterval = setInterval(() => {
+                if (state.countdownSeconds > 1) {
+                    state.countdownSeconds--;
+                    const displayEl = document.getElementById('hintTimerDisplay');
+                    const tooltipEl = document.getElementById('hintTooltip');
+                    updateTimerUI(displayEl, tooltipEl);
+                } else {
+                    state.countdownSeconds = 0;
+                    state.hintUnlocked = true;
+                    clearInterval(state.countdownInterval);
+                    state.countdownInterval = null;
+                    // 當倒數完成解鎖時，觸發物理引擎更新，以重新渲染 matchStatus 為公式樣式
+                    updatePhysics();
+                }
+            }, 1000);
+        };
+
+        // 初始化提示系統事件監聽與顯示狀態
+        const initHintSystem = () => {
+            const hintBulb = document.getElementById('hintBulb');
+            const hintTimerDisplay = document.getElementById('hintTimerDisplay');
+            const hintTooltip = document.getElementById('hintTooltip');
+            if (!hintBulb) return;
+
+            // 根據全域狀態設定初始顯示
+            if (state.hintUnlocked) {
+                hintTimerDisplay.innerText = '';
+                hintTooltip.innerHTML = '提示公式：\\(\\omega = \\sqrt{\\frac{k}{m}}\\)';
+                if (window.MathJax && MathJax.typesetPromise) {
+                    MathJax.typesetPromise([hintTooltip]);
+                }
+            } else if (state.countdownStarted) {
+                updateTimerUI(hintTimerDisplay, hintTooltip);
+                if (!state.countdownInterval) {
+                    startTimerInterval();
+                }
+            } else {
+                hintTimerDisplay.innerText = '';
+                hintTooltip.innerText = '懸停以開始倒數並解鎖提示';
+            }
+
+            // 第一次滑鼠移入時，開始倒數計時
+            hintBulb.addEventListener('mouseenter', () => {
+                if (!state.countdownStarted && !state.hintUnlocked) {
+                    state.countdownStarted = true;
+                    state.countdownSeconds = 45;
+                    updateTimerUI(hintTimerDisplay, hintTooltip);
+                    startTimerInterval();
+                }
+            });
+        };
+
+        // --- p5.js Sketch ---
+        let myp5 = new p5((p) => {
+            let parentDiv;
+            p.setup = () => {
+                parentDiv = document.getElementById('p5container');
+                let canvas = p.createCanvas(parentDiv.clientWidth, parentDiv.clientHeight);
+                canvas.parent('p5container');
+                updateParams();
+            };
+
+            p.windowResized = () => {
+                if (parentDiv.clientWidth > 0 && parentDiv.clientHeight > 0) {
+                    p.resizeCanvas(parentDiv.clientWidth, parentDiv.clientHeight);
+                }
+            };
+
+            p.draw = () => {
+                if (state.isPlaying) {
+                    let T_c = (2 * Math.PI) / state.w;
+                    state.phase += (1 / 60) / T_c;
+                    if (state.phase > 1) state.phase -= 1;
+                    timeSlider.value = state.phase;
+                    if (document.activeElement !== timeInput) {
+                        timeInput.value = state.phase.toFixed(1);
+                    }
+                    updatePhysics();
+                }
+                drawCanvasInternal(p);
+            };
+
+            window.drawCanvas = () => { drawCanvasInternal(p); };
+        });
+
+        function drawCanvasInternal(p) {
+            let bg = isBlackboard ? p.color(26, 42, 34) : p.color(248, 249, 250);
+            let strokeCol = isBlackboard ? p.color(255) : p.color(50);
+            let guideCol = isBlackboard ? p.color(255, 255, 255, 60) : p.color(0, 0, 0, 40);
+
+            let cX = p.color(46, 204, 113);
+            let cV = p.color(231, 76, 60);
+            let cA = p.color(155, 89, 182);
+            let shadowCol = isBlackboard ? p.color(200, 200, 200, 150) : p.color(149, 165, 166, 150);
+
+            p.background(bg);
+
+            let cx = p.width / 2;
+            let cyTop = p.height * 0.35;
+            let cyBot = p.height * 0.85;
+
+            scaleFactor = Math.min(p.width / 3.0, p.height / 5.5);
+            let pixR = state.R * scaleFactor;
+
+            // Set shadow track to be 10px below the circular track's lowest point
+            let cyShadow = cyTop + pixR + 25;
+
+            p.push();
+            p.translate(cx, 0);
+            p.fill(241, 196, 15, isBlackboard ? 40 : 30);
+            p.noStroke();
+            p.rectMode(p.CENTER);
+            p.rect(0, cyShadow / 2, pixR * 2 + 60, cyShadow);
+
+            let raySpacing = 25;
+            for (let rx = -pixR - 20; rx <= pixR + 20; rx += raySpacing) {
+                p.stroke(241, 196, 15, isBlackboard ? 80 : 60);
+                p.strokeWeight(1);
+                p.line(rx, 10, rx, cyShadow);
+
+                // Draw light bulb
+                p.noStroke();
+                p.fill(241, 196, 15, 200);
+                p.ellipse(rx, 10, 14, 14); // Bulb glowing part
+                p.fill(isBlackboard ? 100 : 150);
+                p.rectMode(p.CENTER);
+                p.rect(rx, 2, 8, 8, 2); // Bulb base
+            }
+            p.pop();
+
+            p.push();
+            p.translate(cx, cyTop);
+            p.stroke(guideCol);
+            p.strokeWeight(1.5);
+            p.line(-pixR - 40, 0, pixR + 40, 0);
+            p.line(0, -pixR - 40, 0, pixR + 40);
+            p.noFill();
+            p.stroke(guideCol);
+            p.ellipse(0, 0, pixR * 2, pixR * 2);
+
+            let theta = state.w * state.t;
+            let normTheta = theta % p.TWO_PI;
+            let pX = pixR * p.cos(normTheta);
+            let pY = -pixR * p.sin(normTheta);
+
+            // Draw Sector for theta
+            let arcRadius = scaleFactor * 0.4;
+            if (arcRadius < 25) arcRadius = 25;
+            if (arcRadius > 50) arcRadius = 50;
+
+            p.fill(isBlackboard ? p.color(255, 255, 255, 30) : p.color(0, 0, 0, 20));
+            p.stroke(strokeCol);
+            p.strokeWeight(1.5);
+            if (normTheta > 0.01) {
+                p.arc(0, 0, arcRadius * 2, arcRadius * 2, -normTheta, 0, p.PIE);
+            }
+
+            p.stroke(strokeCol);
+            p.strokeWeight(2.5);
+            p.line(0, 0, pX, pY);
+            p.fill(strokeCol);
+            p.noStroke();
+            p.ellipse(pX, pY, 18, 18);
+            p.pop();
+
+            let thetaDOM = document.getElementById('thetaLabel');
+            if (thetaDOM) {
+                // 固定放在第一象限 (p5.js 中 y 軸朝下，第一象限是 x>0, y<0)，角度取 -PI/8 (-22.5度)
+                let lblAngle = -p.PI / 8;
+                let lblDist = arcRadius * 0.5;
+                let domX = cx + lblDist * p.cos(lblAngle);
+                let domY = cyTop + lblDist * p.sin(lblAngle);
+                thetaDOM.style.left = domX + 'px';
+                thetaDOM.style.top = domY + 'px';
+            }
+
+            let pixXc = state.xc * scaleFactor;
+            p.push();
+            p.translate(cx, cyShadow);
+            p.stroke(guideCol);
+            p.strokeWeight(1.5);
+            p.drawingContext.setLineDash([6, 6]);
+            p.line(-pixR - 50, 0, pixR + 50, 0);
+            p.drawingContext.setLineDash([]);
+            p.stroke(shadowCol);
+            p.strokeWeight(2.5);
+            p.drawingContext.setLineDash([5, 5]);
+            p.line(pixXc, cyTop - cyShadow + pY, pixXc, 0);
+            p.drawingContext.setLineDash([]);
+            p.fill(shadowCol);
+            p.noStroke();
+            p.ellipse(pixXc, 0, 46, 20);
+            p.fill(strokeCol);
+            p.textAlign(p.CENTER, p.BOTTOM);
+            p.textSize(14);
+            p.textStyle(p.BOLD);
+            p.text("影子", pixXc, -12);
+            p.pop();
+
+            p.push();
+            p.translate(cx, cyBot);
+            let pixXs = state.xs * scaleFactor;
+            let maxTrack = 2.0 * scaleFactor + 50;
+            p.stroke(guideCol);
+            p.strokeWeight(4);
+            p.line(-maxTrack, 25, maxTrack, 25);
+            p.stroke(guideCol);
+            p.drawingContext.setLineDash([6, 6]);
+            p.line(0, 25, 0, cyShadow - cyBot + 25);
+            p.drawingContext.setLineDash([]);
+            p.fill(guideCol);
+            p.noStroke();
+            p.rect(-maxTrack - 15, -35, 30, 70);
+            p.noFill();
+            p.stroke(strokeCol);
+            p.strokeWeight(3.5);
+            p.beginShape();
+            p.vertex(-maxTrack, 0);
+            let boxSize = 36 + (state.m - 1) * 3;
+            let springEnd = pixXs - boxSize / 2;
+            let coils = 16;
+            let step = (springEnd - (-maxTrack)) / coils;
+            for (let i = 1; i < coils; i++) {
+                p.vertex(-maxTrack + i * step, (i % 2 === 0) ? 14 : -14);
+            }
+            p.vertex(springEnd, 0);
+            p.endShape();
+            p.fill(isBlackboard ? p.color(50, 150, 100) : p.color(200, 230, 210));
+            p.stroke(strokeCol);
+            p.rectMode(p.CENTER);
+            p.rect(pixXs, 0, boxSize, boxSize, 8);
+            p.fill(strokeCol);
+            p.noStroke();
+            p.textAlign(p.CENTER, p.CENTER);
+            p.textSize(16);
+            p.textStyle(p.BOLD);
+            p.text(state.m + "kg", pixXs, 0);
+            p.pop();
+
+            let scaleV = scaleFactor * 0.2;
+            let scaleA = scaleFactor * 0.05;
+            p.push();
+            p.translate(cx + state.xs * scaleFactor, cyBot);
+            if (showVCheck.checked && Math.abs(state.vs) > 0.05) {
+                drawArrow(p, cV, 0, -boxSize / 2 - 8, state.vs * scaleV, 0, "v");
+            }
+            if (showACheck.checked && Math.abs(state.as) > 0.05) {
+                drawArrow(p, cA, 0, -boxSize / 2 - 32, state.as * scaleA, 0, "a");
+            }
+            p.pop();
+            if (showXCheck.checked && Math.abs(state.xs) > 0.05) {
+                p.push();
+                p.translate(cx, cyBot + 45);
+                drawArrow(p, cX, 0, 0, state.xs * scaleFactor, 0, "x", 22);
+                p.pop();
+            }
+
+            // 處理彩紙粒子的產生與繪製
+            if (shouldSpawnConfetti) {
+                let spawnX = cx + state.xs * scaleFactor;
+                let spawnY = cyBot;
+                for (let i = 0; i < 80; i++) {
+                    confettis.push(new Confetti(p, spawnX, spawnY));
+                }
+                shouldSpawnConfetti = false;
+            }
+
+            for (let i = confettis.length - 1; i >= 0; i--) {
+                confettis[i].update();
+                confettis[i].draw();
+                if (confettis[i].isDead()) {
+                    confettis.splice(i, 1);
+                }
+            }
+        }
+
+        function drawArrow(p, col, x, y, vecX, vecY, label, labelYOffset = -18) {
+            p.push();
+            p.translate(x, y);
+            p.stroke(col);
+            p.strokeWeight(4);
+            p.fill(col);
+            p.line(0, 0, vecX, vecY);
+            let angle = p.atan2(vecY, vecX);
+            p.translate(vecX, vecY);
+            p.rotate(angle);
+            p.triangle(0, 0, -10, 7, -10, -7);
+            p.noStroke();
+            p.rotate(-angle);
+            p.textSize(18);
+            p.textStyle(p.BOLD);
+            p.textAlign(p.CENTER, p.CENTER);
+            let offset = vecX > 0 ? 18 : -18;
+            p.text(label, offset, labelYOffset);
+            p.pop();
+        }
+    </script>
+
+</body>
+
+</html>

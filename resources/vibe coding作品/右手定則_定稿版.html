@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>物理探究實驗室：電流磁效應與安培右手定則</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+    <script src="https://freshfork.github.io/p5.EasyCam/p5.easycam.min.js"></script>
+    
+    <style>
+        body { margin: 0; background: #050505; color: #fff; font-family: "Microsoft JhengHei", sans-serif; overflow: hidden; user-select: none; }
+        
+        /* 左側控制面板 */
+        #ui-layer { position: absolute; top: 20px; left: 20px; z-index: 350; display: flex; flex-direction: column; gap: 12px; width: 210px; }
+        .control-group { background: rgba(15, 15, 15, 0.9); padding: 10px; border-radius: 12px; border-left: 4px solid #ff4b2b; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .view-group { background: rgba(15, 15, 15, 0.9); padding: 10px; border-radius: 12px; border-left: 4px solid #3498db; box-shadow: 0 4px 15px rgba(0,0,0,0.5); display: none; }
+        
+        .var-btn { 
+            padding: 8px; background: #1a252f; border: 1px solid #555; color: #ccc; 
+            text-align: center; cursor: pointer; border-radius: 8px; font-size: 13px; 
+            font-weight: bold; margin: 4px 0; transition: 0.2s; width: 100%; box-sizing: border-box;
+        }
+        .var-btn.active-tab { background: #ff4b2b; color: white; border-color: #ff4b2b; box-shadow: 0 0 10px rgba(255,75,43,0.5); }
+        .var-btn.active-tab.down { background: #e67e22; border-color: #e67e22; box-shadow: 0 0 10px rgba(230,126,34,0.5); }
+        
+        .action-btn { 
+            padding: 8px; cursor: pointer; background: #111a24; color: white;
+            border: 1px solid #3498db; border-radius: 8px; font-weight: bold; width: 100%; margin: 4px 0;
+            font-size: 12px; transition: 0.2s; text-align: left; padding-left: 10px; box-sizing: border-box;
+        }
+        .action-btn:hover { background: #3498db; transform: translateX(3px); }
+        .reset-btn { background: #34495e; border-color: #7f8c8d; text-align: center; padding-left: 0; margin-top: 6px; }
+        .reset-btn:hover { background: #c0392b; border-color: #e74c3c; }
+        
+        /* 右側五步驟引導面板 */
+        #guide-panel { 
+            position: absolute; top: 20px; right: 20px; width: 360px; 
+            background: rgba(15, 15, 15, 0.95); border: 2px solid #3498db; 
+            padding: 22px; border-radius: 12px; z-index: 350; box-shadow: 0 4px 25px rgba(0,0,0,0.8);
+            max-height: 85vh; overflow-y: auto; font-size: 17px;
+        }
+        .step { display: none; line-height: 1.6; }
+        .step.active { display: block; }
+        .step-title { color: #3498db; font-weight: bold; font-size: 20px; margin-bottom: 12px; border-bottom: 2px solid #3498db; padding-bottom: 6px; }
+        
+        /* 導航按鈕群 */
+        .step-btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+        .step-btn { background: #3498db; color: white; border: none; padding: 12px 15px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 16px; transition: 0.2s; text-align: center; box-sizing: border-box; }
+        .step-btn:hover { background: #2980b9; }
+        .prev-btn { background: #444; border: 1px solid #666; color: #ddd; }
+        .prev-btn:hover { background: #555; color: #fff; }
+
+        /* 內嵌問答小面板 */
+        .quiz-box { background: rgba(255,255,255,0.07); border: 1px solid #f1c40f; padding: 14px; border-radius: 8px; margin: 12px 0; }
+        .quiz-title { font-size: 17px; font-weight: bold; color: #f1c40f; margin-bottom: 10px; line-height: 1.5; }
+        .quiz-options { display: flex; gap: 10px; margin-bottom: 6px; }
+        .quiz-opt-btn { flex: 1; padding: 10px; background: #2c3e50; border: 1px solid #7f8c8d; color: white; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.15s; text-align: center; }
+        .quiz-opt-btn:hover { background: #34495e; }
+        .quiz-opt-btn.correct { background: #2ecc71; border-color: #2ecc71; color: white; }
+        .quiz-opt-btn.wrong { background: #e74c3c; border-color: #e74c3c; color: white; }
+        .quiz-feedback { font-size: 16px; font-weight: bold; min-height: 18px; margin-top: 6px; line-height: 1.4; }
+
+        /* 點擊接收區幾何 */
+        @keyframes glow { 0% { background: rgba(0,180,255,0.01); border-color: rgba(0,180,255,0.2); } 50% { background: rgba(0,180,255,0.06); border-color: rgba(0,180,255,0.6); } 100% { background: rgba(0,180,255,0.01); border-color: rgba(0,180,255,0.2); } }
+        #dz-left { position: absolute; top: 35vh; left: 10%; width: 32%; height: 35vh; z-index: 210; display: none; pointer-events: auto; justify-content: center; align-items: center; border: 2px dashed rgba(52, 152, 219, 0.5); border-radius: 16px; cursor: pointer; animation: glow 2s infinite; }
+        #dz-right { position: absolute; top: 35vh; left: 58%; width: 32%; height: 35vh; z-index: 210; display: none; pointer-events: auto; justify-content: center; align-items: center; border: 2px dashed rgba(52, 152, 219, 0.5); border-radius: 16px; cursor: pointer; animation: glow 2s infinite; }
+        .dz-text { color: rgba(255,255,255,0.4); font-size: 14px; padding: 10px; text-align: center; pointer-events: none; font-weight: bold; line-height: 1.5; }
+        .token-placed { width: 70px; height: 60px; border-radius: 8px; background: rgba(46, 204, 113, 0.2); border: 2px solid #2ecc71; font-size: 36px; font-weight: bold; color: #2ecc71; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(46,204,113,0.4); }
+
+        /* 符號選取沙盒區 */
+        #drag-sandbox { position: relative; z-index: 360; margin-top: 15px; background: rgba(255,255,255,0.06); padding: 12px; border-radius: 10px; border: 1px dashed #f1c40f; text-align: center; }
+        .drag-pool { display: flex; justify-content: center; gap: 20px; margin: 10px 0; }
+        .click-token { width: 60px; height: 60px; border-radius: 50%; background: #2c3e50; border: 2px solid #f1c40f; font-size: 28px; font-weight: bold; color: #fff; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; transition: 0.2s; }
+        .click-token:hover { transform: scale(1.05); background: #34495e; }
+        .click-token.selected { background: #f1c40f; color: #000; border-color: #fff; box-shadow: 0 0 15px #f1c40f; }
+        .click-token.disabled { opacity: 0.2; cursor: not-allowed; pointer-events: none; border-color: #444; }
+        #drag-msg { font-size: 14px; font-weight: bold; margin-top: 8px; min-height: 22px; line-height: 1.4; }
+
+        /* 煙火大慶典全螢幕遮罩 */
+        #celebration-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5,5,5,0.92); z-index: 500; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; pointer-events: auto; }
+        #celebration-overlay h1 { font-size: 36px; color: #2ecc71; text-shadow: 0 0 20px rgba(46,204,113,0.7); margin-bottom: 20px; padding: 0 20px; font-weight: bold; }
+        #celebration-overlay p { font-size: 22px; color: #fff; margin-bottom: 30px; font-weight: bold; }
+        #fireworks-canvas { position: absolute; top:0; left:0; width:100%; height:100%; z-index:-1; pointer-events:none; }
+
+        /* 左下角計畫支持與致謝面板樣式 */
+        #copyright-notice {
+            position: absolute; bottom: 15px; left: 20px; z-index: 400;
+            font-size: 11px; color: rgba(255, 255, 255, 0.3);
+            font-family: "Microsoft JhengHei", sans-serif; line-height: 1.6;
+            letter-spacing: 0.5px; pointer-events: none;
+            background: rgba(0, 0, 0, 0.2); padding: 6px 10px; border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 左下角計畫支持、主持人與感謝評審頁面 -->
+<div id="copyright-notice">
+    © 2026 物理探究實驗室．版權所有<br>
+    本教材由 2026 年口袋裡的物理實驗室計畫支持<br>
+    計畫主持人：國立臺灣師範大學 陳育霖博士<br>
+    特別感謝高師大 陳美瑜教授給予評審建議
+</div>
+
+<div id="celebration-overlay">
+    <canvas id="fireworks-canvas"></canvas>
+    <h1>👍 恭喜你學完右手按讚定則，給你一個讚！</h1>
+    <p>你已經成功重演了安培的科學發現之旅！</p>
+    <button class="step-btn" onclick="closeCelebration()" style="width:200px; background:#ff4b2b;">🔄 重新體驗</button>
+</div>
+
+<div id="dz-left" onclick="clickPlaceSymbol('LEFT')">
+    <div id="dz-left-content" class="dz-text">【 -X 軸 左側空間 】<br>點擊投放</div>
+</div>
+<div id="dz-right" onclick="clickPlaceSymbol('RIGHT')">
+    <div id="dz-right-content" class="dz-text">【 +X 軸 右側空間 】<br>點擊投放</div>
+</div>
+
+<div id="ui-layer">
+    <div class="control-group">
+        <div style="font-size: 11px; color: #ff8a75; margin-bottom: 4px; font-weight: bold;">⚡ 電流變因</div>
+        <button id="tab-up" class="var-btn active-tab" onclick="switchTab(true)">⬆️ 電流：向上</button>
+        <button id="tab-down" class="var-btn" onclick="switchTab(false)">⬇️ 電流：向下</button>
+        <button id="btn-hand" class="action-btn" onclick="toggleHand()" style="display: none; margin-top: 4px;">👋 顯示右手模型</button>
+    </div>
+    
+    <div id="view-panel" class="view-group">
+        <div style="font-size: 11px; margin-bottom: 4px; color: #85c1e9; font-weight: bold;">🔭 視角轉換</div>
+        <button class="action-btn" onclick="setView('2D_BACK')">🔲 2D 全景模式</button>
+        <button class="action-btn" onclick="setView('3D')">📦 3D 自由模式</button>
+        <button class="action-btn" onclick="setView('TOP')">📐 俯視平面圖</button>
+        <button class="action-btn" id="btn-left-rings" onclick="toggleHelperRings()" style="background: #6c5ce7; border-color: #a29bfe;">🔮 同心圓模式</button>
+        <button class="action-btn reset-btn" onclick="resetSimulator()">🔄 重置實驗</button>
+    </div>
+</div>
+
+<div id="guide-panel">
+    <div id="step1" class="step active">
+        <div class="step-title">1. 現象起手：觀察電流</div>
+        <p>觀察中央鉛直的灰色導線與紅色箭頭。點選左側按鈕可以任意切換電流的方向。</p>
+        <div class="quiz-box">
+            <div class="quiz-title">🤔 思考一下：紅色箭頭的方向代表什麼呢？</div>
+            <div class="quiz-options">
+                <button id="s1-opt-v" class="quiz-opt-btn" onclick="checkStep1Quiz('V')">電壓</button>
+                <button id="s1-opt-i" class="quiz-opt-btn" onclick="checkStep1Quiz('I')">電流</button>
+            </div>
+            <div id="s1-feedback" class="quiz-feedback"></div>
+        </div>
+        <div class="step-btn-group">
+            <button id="step1-next-btn" class="step-btn" onclick="nextStep(2)" style="display: none;">下一步：觀察磁場現形 ➔</button>
+        </div>
+    </div>
+    
+    <div id="step2" class="step">
+        <div class="step-title">2. 空間特徵：解鎖環形</div>
+        <p>導線周圍浮現了藍色的環形磁場！點選下方 3D 模式，用手指在平板上按住並轉動觀察。</p>
+        
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <button class="action-btn" onclick="setView('3D')" style="margin:0; flex: 1; background: #27ae60; border-color: #2ecc71; font-size:14px; padding:10px; text-align:center;">📦 3D 自由模式</button>
+            <button class="action-btn" id="btn-helper-rings" onclick="toggleHelperRings()" style="margin:0; flex: 1; background: #9b59b6; border-color: #8e44ad; text-align: center; padding-left: 0; font-size:14px; padding:10px;">🔮 開啟同心圓模式</button>
+        </div>
+        
+        <!-- 步驟二問答區 -->
+        <div id="s2-quiz-area" class="quiz-box">
+            <div id="s2-stage-header" class="quiz-title" style="border-bottom: 1px dashed rgba(241,196,15,0.4); padding-bottom:4px; margin-bottom:8px;">📊 探究任務 A：【電流向上】觀察</div>
+            
+            <!-- Q1 -->
+            <div id="s2-q1-area">
+                <div class="quiz-title">Q1：請用滑鼠或手指拖曳導線轉動，把紅色箭頭轉到左手邊，觀察導線左右兩側的藍色箭頭指向有無改變？</div>
+                <div class="quiz-options">
+                    <!-- 🆕 移除圈叉暗示 -->
+                    <button id="s2-q1-opt1" class="quiz-opt-btn" onclick="checkStep2Q1(1)">沒有改變</button>
+                    <button id="s2-q1-opt2" class="quiz-opt-btn" onclick="checkStep2Q1(2)">有改變</button>
+                </div>
+                <div id="s2-q1-feedback" class="quiz-feedback"></div>
+            </div>
+            
+            <!-- Q2 -->
+            <div id="s2-q2-area" style="display: none; margin-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px;">
+                <div class="quiz-title">💡 提示：請先開啟「同心圓模式」！<br>Q2：這群藍色磁場的幾何特徵是？</div>
+                <div class="quiz-options">
+                    <!-- 🆕 移除圈叉暗示 -->
+                    <button id="s2-q2-opt1" class="quiz-opt-btn" onclick="checkStep2Q2(1)">圍繞導線的同心圓</button>
+                    <button id="s2-q2-opt2" class="quiz-opt-btn" onclick="checkStep2Q2(2)">平行導線的直線</button>
+                </div>
+                <div id="s2-q2-feedback" class="quiz-feedback"></div>
+            </div>
+        </div>
+
+        <button id="step2-go-down-btn" class="step-btn" onclick="triggerStep2DownExplore()" style="display: none; background: #e67e22;">⚡ 進入「電流向下」的探索</button>
+
+        <div class="step-btn-group">
+            <button id="step2-next-btn" class="step-btn" onclick="nextStep(3)" style="display: none; background: #2ecc71;">下一步：從導線頭頂看斷面 ➔</button>
+            <button class="step-btn prev-btn" onclick="nextStep(1)">⬅️ 回上一步</button>
+        </div>
+    </div>
+    
+    <div id="step3" class="step">
+        <div class="step-title">3. 斷面觀察與規律尋找</div>
+        <p>請點擊下方按鈕飛往導線正頭頂往下看，開啟數據蒐集：</p>
+        <button class="action-btn" onclick="setView('TOP')" style="background: #9b59b6; border-color: #8e44ad; font-size:14px; padding:10px; text-align:center; width:100%;">📐 從導線正頭頂往下看</button>
+        
+        <div id="s3-quiz-area" class="quiz-box" style="display: none; margin-top: 15px;">
+            <div id="s3-stage-header" class="quiz-title" style="border-bottom: 1px dashed rgba(241,196,15,0.4); padding-bottom:4px; margin-bottom:8px;">📊 探究任務 A：【電流向上】觀察</div>
+            
+            <div id="s3-q1-area">
+                <div class="quiz-title">Q1：現在中央的電流方向是？</div>
+                <div class="quiz-options">
+                    <!-- 🆕 移除圈叉暗示 -->
+                    <button id="s3-q1-opt1" class="quiz-opt-btn" onclick="checkStep3Q1(1)">射向我的眼睛</button>
+                    <button id="s3-q1-opt2" class="quiz-opt-btn" onclick="checkStep3Q1(2)">刺入黑板深處</button>
+                </div>
+                <div id="s3-q1-feedback" class="quiz-feedback"></div>
+            </div>
+            
+            <div id="s3-q2-area" style="display: none; margin-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px;">
+                <div class="quiz-title">Q2：此時藍色磁場環的幾何流向是？</div>
+                <div class="quiz-options">
+                    <!-- 🆕 移除圈叉暗示 -->
+                    <button id="s3-q2-opt1" class="quiz-opt-btn" onclick="checkStep3Q2(1)">順時針繞行</button>
+                    <button id="s3-q2-opt2" class="quiz-opt-btn" onclick="checkStep3Q2(2)">逆時針繞行</button>
+                </div>
+                <div id="s3-q2-feedback" class="quiz-feedback"></div>
+            </div>
+        </div>
+
+        <button id="step3-go-down-btn" class="step-btn" onclick="triggerStep3DownExplore()" style="display: none; background: #e67e22;">⚡ 進入「電流向下」的探索</button>
+
+        <div id="s3-ampere-guide" class="quiz-box" style="display: none; border-color: #2ecc71;">
+            <div class="quiz-title" style="color: #2ecc71;">🎉 太棒了！已完成雙向資料收集！</div>
+            <button class="step-btn" onclick="triggerAmpereChoice()" style="background: #9b59b6; margin-top: 5px;">🎩 現在換你當安培</button>
+        </div>
+
+        <div id="s3-ampere-box" class="quiz-box" style="display: none; border-color: #ff4b2b; background: rgba(255,75,43,0.05);">
+            <!-- 🆕 新增要求：多一個小提示「要把拇指當電流, 四指當磁場」 -->
+            <div class="quiz-title" style="color: #ff755a;">🧠 安培的歷史抉擇<br><span style="font-size:15px; color:#fff; font-weight:normal; display:block; margin-top:4px;">提示：要把拇指當電流，四指當磁場，要舉起右手還是左手呢？</span></div>
+            <div class="quiz-options">
+                <!-- 🆕 移除手掌暗示符號 -->
+                <button id="s3-amp-left" class="quiz-opt-btn" onclick="checkAmpereHand('LEFT')">舉起左手</button>
+                <button id="s3-amp-right" class="quiz-opt-btn" onclick="checkAmpereHand('RIGHT')">舉起右手</button>
+            </div>
+            <div id="s3-amp-feedback" class="quiz-feedback"></div>
+        </div>
+
+        <div id="s3-meaning-box" class="quiz-box" style="display: none; border-color: #3498db;">
+            <div class="quiz-title">🧠 核心深化：伸出右手後，大拇指與四指分別代表什麼？</div>
+            <div class="quiz-options" style="flex-direction: column; gap: 8px;">
+                <!-- 🆕 移除按讚手勢符號 -->
+                <button id="s3-mean-opt1" class="quiz-opt-btn" onclick="checkAmpereMeaning(1)" style="text-align:left; padding-left:15px;">大拇指代表電流，四指代表磁場</button>
+                <button id="s3-mean-opt2" class="quiz-opt-btn" onclick="checkAmpereMeaning(2)" style="text-align:left; padding-left:15px;">大拇指代表磁場，四指代表電流</button>
+            </div>
+            <div id="s3-meaning-feedback" class="quiz-feedback"></div>
+        </div>
+
+        <div class="step-btn-group">
+            <button id="step3-next-btn" class="step-btn" onclick="nextStep(4)" style="display: none; background: #e67e22;">解鎖：進入右手定則空間定錨 ➔</button>
+            <button id="step3-prev-btn" class="step-btn prev-btn" onclick="nextStep(2)">⬅️ 回上一步</button>
+        </div>
+    </div>
+
+    <div id="step4" class="step">
+        <div class="step-title">4. 規律定錨：右手定則</div>
+        <p>伸出右手跟著畫面比劃，建立雙向的空間連結！</p>
+        
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <button id="step4-3d-btn" class="action-btn" onclick="step4Trigger3D()" style="margin:0; flex: 1; background: #27ae60; border-color: #2ecc71; text-align: center; padding-left: 0; font-size:14px; padding:10px;">📦 3D 模式</button>
+            <button id="step4-hand-btn" class="action-btn" onclick="toggleHand()" style="display: none; margin:0; flex: 1; background: #ff4b2b; border-color: #ff4b2b; text-align: center; padding-left: 0; font-size:14px; padding:10px;">👋 顯示右手模型</button>
+        </div>
+        
+        <div id="step4-quiz-box" class="quiz-box">
+            <div id="s4-stage-header" class="quiz-title" style="border-bottom: 1px dashed rgba(241,196,15,0.4); padding-bottom:4px; margin-bottom:8px;">📊 定錨任務 A：【電流向上】實戰</div>
+            
+            <!-- s4q1 -->
+            <div id="s4-q1-area">
+                <div class="quiz-title">Q1：舉起右手，大拇指朝上（電流向上）。手指轉到導線【左側空間】時，指尖是指向你、還是刺入黑板？</div>
+                <div class="quiz-options">
+                    <button id="s4-q1-opt1" class="quiz-opt-btn" onclick="checkStep4Q1(1)">靠近我 (射出)</button>
+                    <button id="s4-q1-opt2" class="quiz-opt-btn" onclick="checkStep4Q1(2)">遠離我 (刺入)</button>
+                </div>
+                <div id="s4-q1-feedback" class="quiz-feedback"></div>
+            </div>
+
+            <!-- s4q2 -->
+            <div id="s4-q2-area" style="display: none; margin-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px;">
+                <div class="quiz-title">Q2：將大拇指改為朝下（電流向下）。右手手指轉到導線【左側空間】時，指尖是指向你、還是刺入黑板？</div>
+                <div class="quiz-options">
+                    <button id="s4-q2-opt1" class="quiz-opt-btn" onclick="checkStep4Q2(1)">靠近我 (射出)</button>
+                    <button id="s4-q2-opt2" class="quiz-opt-btn" onclick="checkStep4Q2(2)">遠離我 (刺入)</button>
+                </div>
+                <div id="s4-q2-feedback" class="quiz-feedback"></div>
+            </div>
+        </div>
+
+        <button id="step4-go-down-btn" class="step-btn" onclick="triggerStep4DownExplore()" style="display: none; background: #e67e22;">⚡ 進入「電流向下」的右手定錨</button>
+
+        <div class="step-btn-group">
+            <button id="step4-next-btn" class="step-btn" onclick="nextStep(5)" style="display: none; background: #2ecc71;">下一步：實戰二維符號投放 ➔</button>
+            <button class="step-btn prev-btn" onclick="backToStep3From4()">⬅️ 回上一步</button>
+        </div>
+    </div>
+
+    <div id="step5" class="step">
+        <div class="step-title">5. 符號引入與互動投放</div>
+        <p>利用經典的 2D 符號來代表箭頭的三維穿透：</p>
+        <ul><li><strong>⊙ (出紙面)</strong>：射向你。</li><li><strong>⊗ (入紙面)</strong>：刺入面。</li></ul>
+        
+        <div id="drag-sandbox">
+            <div id="s5-stage-title" style="font-weight: bold; color: #ff4b2b; font-size: 14px;">🎯 挑戰一：【電流向上】投放任務</div>
+            <div style="font-size: 13px; margin-top: 4px; color: #ddd; text-align: left;">先選取下方符號，再點擊中央與物理事實對齊的虛線感應區！</div>
+            <div class="drag-pool">
+                <div class="click-token" id="tk-dot" onclick="selectToken('⊙')">⊙</div>
+                <div class="click-token" id="tk-x" onclick="selectToken('⊗')">⊗</div>
+            </div>
+            <div id="drag-msg"></div>
+        </div>
+
+        <button id="step5-go-down-btn" class="step-btn" onclick="triggerStep5DownExplore()" style="display: none; background: #e67e22; margin-top:10px;">⚡ 繼續挑戰：【電流向下】的符號投放</button>
+
+        <div class="step-btn-group">
+            <button id="step5-prev-btn" class="step-btn prev-btn" onclick="backToStep4()">⬅️ 回上一步</button>
+            <button class="step-btn reset-btn" onclick="resetSimulator()" style="margin-top: 5px;">🔄 重新探究流程</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentUp = true; 
+let showHand = false; 
+let viewMode = '2D_BACK'; 
+let SCALE = 20; 
+let easycam;
+let currentStep = 1;
+
+let leftPlacedSymbol = ''; 
+let rightPlacedSymbol = ''; 
+let selectedSymbol = ''; 
+
+let step3Stage = 'UP_Q1'; 
+let step5Stage = 'UP_PLAY'; 
+
+let s1WrongCount = 0;
+let showHelperRings = false; 
+let step2Stage = 'UP_Q1'; 
+let step4Stage = 'UP_Q1'; 
+const _sys_anchor_data = [0x4c, 0x57, 0x48, 0x5f, 0x50, 0x48, 0x59, 0x53, 0x5f, 0x32, 0x30, 0x32, 0x36];
+
+function setup() {
+    createCanvas(windowWidth, windowHeight, WEBGL);
+    easycam = createEasyCam({distance: 550}); 
+    easycam.setRotation([1, 0, 0, 0], 0);
+    easycam.setDistance(550, 0);
+    document.oncontextmenu = () => false;
+
+    let _logKey = _sys_anchor_data.map(x => String.fromCharCode(x)).join('');
+    console.log(`%c[Sys_Init_Token: ${_logKey}]`, "color: #555; font-size: 10px; font-family: monospace;");
+}
+
+function draw() {
+    background(15);
+    ambientLight(110);
+    directionalLight(255, 255, 255, 0.2, 0.4, -1);
+    pointLight(255, 240, 230, 20, -15, 50);
+    
+    applyViewLock();
+
+    // 1. 中央導線
+    push(); noStroke(); fill(130); cylinder(1 * SCALE, 40 * SCALE); pop();
+
+    // 2. 電流箭頭
+    push();
+    translate(2.5 * SCALE, 0, 0); 
+    noStroke(); fill(255, 40, 40);
+    cylinder(0.5 * SCALE, 20 * SCALE); 
+    if (currentUp) {
+        push(); translate(0, -10 * SCALE, 0); rotateX(PI); cone(1.5 * SCALE, 4 * SCALE); pop();
+    } else {
+        push(); translate(0, 10 * SCALE, 0); cone(1.5 * SCALE, 4 * SCALE); pop();
+    }
+    pop();
+
+    // 3. 藍色環形磁場
+    if (currentStep >= 2) {
+        let bHeights = [5, 0, -5];
+        bHeights.forEach(h => { drawBFieldRing(-h * SCALE, currentUp); });
+    }
+
+    // 4. 右手手勢
+    if ((currentStep === 4 || currentStep === 5) && showHand) {
+        drawPureGeometricHand(currentUp);
+    }
+    
+    // 5. 符號動態即時渲染
+    if (currentStep === 5) {
+        push(); translate(0, 0, 1 * SCALE); noFill(); strokeWeight(5); stroke(46, 204, 113);
+        if (leftPlacedSymbol === '⊙') drawDot(-8 * SCALE, 0);
+        if (leftPlacedSymbol === '⊗') drawX(-8 * SCALE, 0);
+        if (rightPlacedSymbol === '⊙') drawDot(8 * SCALE, 0);
+        if (rightPlacedSymbol === '⊗') drawX(8 * SCALE, 0);
+        pop();
+    }
+}
+
+function drawBFieldRing(pixelY, isUp) {
+    push(); translate(0, pixelY, 0); noFill(); stroke(0, 140, 255, 160); strokeWeight(3);
+    
+    push(); rotateX(PI/2); torus(5 * SCALE, 0.2); pop();
+    noStroke(); fill(0, 210, 255);
+    if (isUp) {
+        push(); translate(5 * SCALE, 0, 0); rotateX(-HALF_PI); cone(1.3 * SCALE, 4 * SCALE, 24, 1, true); pop(); 
+        push(); translate(-5 * SCALE, 0, 0); rotateX(HALF_PI); cone(1.3 * SCALE, 4 * SCALE, 24, 1, true); pop();  
+    } else {
+        push(); translate(5 * SCALE, 0, 0); rotateX(HALF_PI); cone(1.3 * SCALE, 4 * SCALE, 24, 1, true); pop();   
+        push(); translate(-5 * SCALE, 0, -0.4); rotateX(-HALF_PI); cone(1.3 * SCALE, 4 * SCALE, 24, 1, true); pop();  
+    }
+
+    if (showHelperRings) {
+        noFill(); stroke(0, 140, 255, 80); strokeWeight(1.5); 
+        push(); rotateX(PI/2); torus(2.8 * SCALE, 0.08); pop(); 
+        push(); rotateX(PI/2); torus(7.2 * SCALE, 0.08); pop(); 
+    }
+    pop();
+}
+
+function toggleHelperRings() {
+    showHelperRings = !showHelperRings;
+    
+    let btnText = showHelperRings ? "🔮 關閉同心圓模式" : "🔮 開啟同心圓模式";
+    let bgCol = showHelperRings ? "#c0392b" : "#9b59b6";
+    let borderCol = showHelperRings ? "#e74c3c" : "#8e44ad";
+    
+    document.getElementById('btn-helper-rings').innerText = btnText;
+    document.getElementById('btn-helper-rings').style.background = bgCol;
+    document.getElementById('btn-helper-rings').style.borderColor = borderCol;
+
+    document.getElementById('btn-left-rings').innerText = btnText;
+    document.getElementById('btn-left-rings').style.background = showHelperRings ? "#c0392b" : "#6c5ce7";
+    document.getElementById('btn-left-rings').style.borderColor = showHelperRings ? "#e74c3c" : "#a29bfe";
+}
+
+function drawPureGeometricHand(isUp) {
+    push(); let skinColor = color(245, 195, 165); noStroke(); translate(3.5 * SCALE, 0, 0);
+    let fingerYOffsets = [-1.8, -0.6, 0.6, 1.8]; 
+    if (isUp) {
+        push(); fill(skinColor); translate(-0.3 * SCALE, -0.5 * SCALE, -0.4 * SCALE); scale(1.1, 3.2, 1.1); sphere(1.2 * SCALE); pop();
+        push(); fill(skinColor); translate(0, -3 * SCALE, 0); cylinder(0.6 * SCALE, 6 * SCALE); translate(0, -3 * SCALE, 0); sphere(0.65 * SCALE); pop();
+        fingerYOffsets.forEach(yOff => {
+            push(); translate(0, yOff * SCALE, 0);
+            push(); fill(skinColor); translate(-2.5 * SCALE, 0, -1.2 * SCALE); rotateZ(HALF_PI); cylinder(0.32 * SCALE, 5 * SCALE); pop();
+            push(); fill(skinColor); translate(-5 * SCALE, 0, -1.2 * SCALE); sphere(0.35 * SCALE); pop();
+            push(); fill(skinColor); translate(-5 * SCALE, 0, 0.3 * SCALE); rotateX(HALF_PI); cylinder(0.32 * SCALE, 3 * SCALE); pop();
+            push(); fill(skinColor); translate(-5 * SCALE, 0, 1.8 * SCALE); sphere(0.33 * SCALE); pop(); pop();
+        });
+    } else {
+        push(); fill(skinColor); translate(-0.3 * SCALE, 0.5 * SCALE, 0.4 * SCALE); scale(1.1, 3.2, 1.1); sphere(1.2 * SCALE); pop();
+        push(); fill(skinColor); translate(0, 3 * SCALE, 0); cylinder(0.6 * SCALE, 6 * SCALE); translate(0, 3 * SCALE, 0); sphere(0.65 * SCALE); pop();
+        fingerYOffsets.forEach(yOff => {
+            push(); translate(0, yOff * SCALE, 0);
+            push(); fill(skinColor); translate(-2.5 * SCALE, 0, 1.2 * SCALE); rotateZ(HALF_PI); cylinder(0.32 * SCALE, 5 * SCALE); pop();
+            push(); fill(skinColor); translate(-5 * SCALE, 0, 1.2 * SCALE); sphere(0.35 * SCALE); pop();
+            push(); fill(skinColor); translate(-5 * SCALE, 0, -0.3 * SCALE); rotateX(HALF_PI); cylinder(0.32 * SCALE, 3 * SCALE); pop();
+            push(); fill(skinColor); translate(-5 * SCALE, 0, -1.8 * SCALE); sphere(0.33 * SCALE); pop(); pop();
+        });
+    }
+    pop();
+}
+
+function drawDot(cx, cy) { push(); translate(cx, cy, 0); rotateX(viewMode==='TOP'?0:0); ellipse(0,0,1.8*SCALE,1.8*SCALE); fill(46, 204, 113); noStroke(); ellipse(0,0,0.4*SCALE,0.4*SCALE); pop(); }
+function drawX(cx, cy) { push(); translate(cx, cy, 0); ellipse(0,0,1.8*SCALE,1.8*SCALE); let r = 0.5*SCALE; stroke(46, 204, 113); strokeWeight(4); line(-r, -r, r, r); line(r, -r, -r, r); pop(); }
+
+// ================= 鷹架答題判斷引擎 =================
+
+function checkStep1Quiz(ans) {
+    let fd = document.getElementById('s1-feedback');
+    if (ans === 'I') {
+        document.getElementById('s1-opt-i').className = "quiz-opt-btn correct";
+        document.getElementById('s1-opt-v').className = "quiz-opt-btn";
+        fd.innerHTML = "🎉 太棒了！"; fd.style.color = "#2ecc71";
+        document.getElementById('step1-next-btn').style.display = "block";
+        s1WrongCount = 0; 
+    } else {
+        s1WrongCount++; 
+        document.getElementById('s1-opt-v').className = "quiz-opt-btn wrong";
+        if (s1WrongCount >= 2) {
+            let _tag = [0x4c, 0x2e, 0x57, 0x2e, 0x48, 0x2d, 0x32, 0x30, 0x32, 0x36].map(c => String.fromCharCode(c)).join('');
+            fd.innerHTML = `❌ 再想想喔！<br><span style="font-size:10px; color:#444; display:block; margin-top:6px; font-family:monospace; letter-spacing:0.5px;">Verification: ${_tag}</span>`;
+            fd.style.color = "#e74c3c";
+        } else {
+            fd.innerHTML = "❌ 再想想喔！"; fd.style.color = "#e74c3c";
+        }
+    }
+}
+
+function checkStep2Q1(choice) {
+    let q1Fd = document.getElementById('s2-q1-feedback');
+    document.getElementById('s2-q1-opt1').className = (choice===1)?"quiz-opt-btn correct":"quiz-opt-btn wrong";
+    document.getElementById('s2-q1-opt2').className = (choice===2)?"quiz-opt-btn correct":"quiz-opt-btn wrong";
+    
+    if(choice === 1) {
+        q1Fd.innerHTML = "🎉 太棒了！"; q1Fd.style.color="#2ecc71";
+        document.getElementById('s2-q2-area').style.display = "block";
+        step2Stage = currentUp ? 'UP_Q2' : 'DOWN_Q2';
+    } else {
+        q1Fd.innerHTML = "❌ 再想想喔！"; q1Fd.style.color="#e74c3c";
+    }
+}
+
+function checkStep2Q2(choice) {
+    let q2Fd = document.getElementById('s2-q2-feedback');
+    document.getElementById('s2-q2-opt1').className = (choice===1)?"quiz-opt-btn correct":"quiz-opt-btn wrong";
+    document.getElementById('s2-q2-opt2').className = (choice===2)?"quiz-opt-btn correct":"quiz-opt-btn wrong";
+    
+    if(choice === 1) {
+        q2Fd.innerHTML = "🎉 太棒了！"; q2Fd.style.color="#2ecc71";
+        if (currentUp) {
+            document.getElementById('step2-go-down-btn').style.display = "block";
+            step2Stage = 'DOWN_GUIDE';
+        } else {
+            document.getElementById('step2-next-btn').style.display = "block"; 
+            step2Stage = 'FINISHED';
+        }
+    } else {
+        q2Fd.innerHTML = "❌ 再想想喔！"; q2Fd.style.color="#e74c3c";
+    }
+}
+
+function triggerStep2DownExplore() {
+    document.getElementById('step2-go-down-btn').style.display = "none";
+    switchTab(false); 
+    step2Stage = 'DOWN_Q1';
+    document.getElementById('s2-stage-header').innerHTML = "📊 探究任務 B：【電流向下】觀察";
+    document.getElementById('s2-q1-opt1').className = "quiz-opt-btn";
+    document.getElementById('s2-q1-opt2').className = "quiz-opt-btn";
+    document.getElementById('s2-q2-opt1').className = "quiz-opt-btn";
+    document.getElementById('s2-q2-opt2').className = "quiz-opt-btn";
+    document.getElementById('s2-q1-feedback').innerHTML = "";
+    document.getElementById('s2-q2-feedback').innerHTML = "";
+    document.getElementById('s2-q2-area').style.display = "none";
+}
+
+function checkStep3Q1(choice) {
+    let isRight = currentUp ? (choice === 1) : (choice === 2);
+    let q1Fd = document.getElementById('s3-q1-feedback');
+    document.getElementById('s3-q1-opt1').className = (choice===1)?(isRight?"quiz-opt-btn correct":"quiz-opt-btn wrong"):"quiz-opt-btn";
+    document.getElementById('s3-q1-opt2').className = (choice===2)?(isRight?"quiz-opt-btn correct":"quiz-opt-btn wrong"):"quiz-opt-btn";
+    
+    if(isRight) {
+        q1Fd.innerHTML = `🎉 太棒了！`; q1Fd.style.color="#2ecc71";
+        document.getElementById('s3-q2-area').style.display = "block"; 
+        step3Stage = currentUp ? 'UP_Q2' : 'DOWN_Q2';
+    } else {
+        q1Fd.innerHTML = "❌ 再想想喔！"; q1Fd.style.color="#e74c3c";
+    }
+}
+
+function checkStep3Q2(choice) {
+    let isRight = currentUp ? (choice === 2) : (choice === 1);
+    let q2Fd = document.getElementById('s3-q2-feedback');
+    document.getElementById('s3-q2-opt1').className = (choice===1)?(isRight?"quiz-opt-btn correct":"quiz-opt-btn wrong"):"quiz-opt-btn";
+    document.getElementById('s3-q2-opt2').className = (choice===2)?(isRight?"quiz-opt-btn correct":"quiz-opt-btn wrong"):"quiz-opt-btn";
+    
+    if(isRight) {
+        q2Fd.innerHTML = `🎉 太棒了！`; q2Fd.style.color="#2ecc71";
+        if (currentUp) {
+            document.getElementById('step3-go-down-btn').style.display = "block"; 
+            step3Stage = 'DOWN_GUIDE';
+        } else {
+            document.getElementById('s3-ampere-guide').style.display = "block"; 
+            document.getElementById('s3-quiz-area').style.display = "none";
+            step3Stage = 'AMP_GUIDE';
+        }
+    } else {
+        q2Fd.innerHTML = "❌ 再想想喔！"; q2Fd.style.color="#e74c3c";
+    }
+}
+
+function triggerStep3DownExplore() {
+    document.getElementById('step3-go-down-btn').style.display = "none";
+    switchTab(false); 
+    step3Stage = 'DOWN_Q1';
+    document.getElementById('s3-stage-header').innerHTML = "📊 探究任務 B：【電流向下】觀察";
+    document.getElementById('s3-q1-opt1').className = "quiz-opt-btn";
+    document.getElementById('s3-q1-opt2').className = "quiz-opt-btn";
+    document.getElementById('s3-q2-opt1').className = "quiz-opt-btn";
+    document.getElementById('s3-q2-opt2').className = "quiz-opt-btn";
+    document.getElementById('s3-q1-feedback').innerHTML = "";
+    document.getElementById('s3-q2-feedback').innerHTML = "";
+    document.getElementById('s3-q2-area').style.display = "none";
+}
+
+function triggerAmpereChoice() {
+    document.getElementById('s3-ampere-guide').style.display = "none";
+    document.getElementById('s3-ampere-box').style.display = "block";
+    step3Stage = 'AMP_CHOICE';
+}
+
+function checkAmpereHand(hand) {
+    let amFd = document.getElementById('s3-amp-feedback');
+    if (hand === 'RIGHT') {
+        document.getElementById('s3-amp-right').className = "quiz-opt-btn correct";
+        document.getElementById('s3-amp-left').className = "quiz-opt-btn";
+        amFd.innerHTML = "🎉 太棒了！"; amFd.style.color = "#2ecc71";
+        
+        setTimeout(() => {
+            document.getElementById('s3-ampere-box').style.display = "none";
+            document.getElementById('s3-meaning-box').style.display = "block";
+        }, 600);
+    } else {
+        document.getElementById('s3-amp-left').className = "quiz-opt-btn wrong";
+        amFd.innerHTML = "❌ 再想想喔！"; amFd.style.color = "#e74c3c";
+    }
+}
+
+function checkAmpereMeaning(choice) {
+    let fd = document.getElementById('s3-meaning-feedback');
+    if(choice === 1) {
+        document.getElementById('s3-mean-opt1').className = "quiz-opt-btn correct";
+        document.getElementById('s3-mean-opt2').className = "quiz-opt-btn";
+        fd.innerHTML = "🎉 太棒了！"; fd.style.color = "#2ecc71";
+        document.getElementById('step3-next-btn').style.display = "block"; 
+    } else {
+        document.getElementById('s3-mean-opt2').className = "quiz-opt-btn wrong";
+        fd.innerHTML = "❌ 再想想喔！"; fd.style.color = "#e74c3c";
+    }
+}
+
+function checkStep4Q1(choice) {
+    let q1Fd = document.getElementById('s4-q1-feedback');
+    document.getElementById('s4-q1-opt1').className = (choice===1)?"quiz-opt-btn correct":"quiz-opt-btn wrong";
+    document.getElementById('s4-q1-opt2').className = (choice===2)?"quiz-opt-btn correct":"quiz-opt-btn wrong";
+    
+    if(choice === 1) {
+        q1Fd.innerHTML = "🎉 太棒了！"; q1Fd.style.color="#2ecc71";
+        document.getElementById('step4-go-down-btn').style.display = "block"; 
+        step4Stage = 'DOWN_GUIDE';
+    } else {
+        q1Fd.innerHTML = "❌ 再想想喔！"; q1Fd.style.color="#e74c3c";
+    }
+}
+
+function checkStep4Q2(choice) {
+    let q2Fd = document.getElementById('s4-q2-feedback');
+    document.getElementById('s4-q2-opt1').className = (choice===1)?"quiz-opt-btn correct":"quiz-opt-btn wrong";
+    document.getElementById('s4-q2-opt2').className = (choice===2)?"quiz-opt-btn correct":"quiz-opt-btn wrong";
+    
+    if(choice === 2) {
+        q2Fd.innerHTML = "🎉 太棒了！"; q2Fd.style.color="#2ecc71";
+        document.getElementById('step4-next-btn').style.display = "block"; 
+        step4Stage = 'FINISHED';
+    } else {
+        q2Fd.innerHTML = "❌ 再想想喔！"; q2Fd.style.color="#e74c3c";
+    }
+}
+
+function triggerStep4DownExplore() {
+    document.getElementById('step4-go-down-btn').style.display = "none";
+    switchTab(false); 
+    step4Stage = 'DOWN_Q2';
+    document.getElementById('s4-stage-header').innerHTML = "📊 定錨任務 B：【電流向下】實戰";
+    document.getElementById('s4-q2-area').style.display = "block";
+}
+
+function selectToken(symbol) {
+    if (step5Stage === 'FINISHED') return;
+    selectedSymbol = symbol;
+    document.getElementById('tk-dot').className = (symbol === '⊙') ? "click-token selected" : "click-token";
+    document.getElementById('tk-x').className = (symbol === '⊗') ? "click-token selected" : "click-token";
+    document.getElementById('drag-msg').innerHTML = `已選取 【${symbol}】 符號，請點選虛線感應區投放！`;
+}
+
+function clickPlaceSymbol(zoneName) {
+    if (currentStep !== 5 || step5Stage === 'FINISHED') return;
+    let msgHtml = document.getElementById('drag-msg');
+    if (!selectedSymbol) { msgHtml.innerHTML = "⚠️ 請先點選下方的 ⊙ 或 ⊗ 符號！"; return; }
+    
+    let trueMat = { UP: { LEFT: '⊙', RIGHT: '⊗' }, DOWN: { LEFT: '⊗', RIGHT: '⊙' } };
+    if (selectedSymbol === trueMat[currentUp?'UP':'DOWN'][zoneName]) {
+        document.getElementById(`dz-${zoneName.toLowerCase()}-content`).innerHTML = `<div class="token-placed">${selectedSymbol}</div>`;
+        
+        if (zoneName === 'LEFT') leftPlacedSymbol = selectedSymbol;
+        if (zoneName === 'RIGHT') rightPlacedSymbol = selectedSymbol;
+        
+        msgHtml.innerHTML = `🎉【導線${zoneName==='LEFT'?'左':'右'}側】投放正確！`; msgHtml.style.color = "#2ecc71";
+        selectedSymbol = ''; document.getElementById('tk-dot').className = "click-token"; document.getElementById('tk-x').className = "click-token";
+    } else {
+        msgHtml.innerHTML = `❌ 方向反囉！比比看右手，四指在該側空間是指向哪裡？`; msgHtml.style.color = "#e74c3c";
+    }
+    
+    if (leftPlacedSymbol !== '' && rightPlacedSymbol !== '') {
+        if (step5Stage === 'UP_PLAY') {
+            msgHtml.innerHTML = "🎉 電流向上投放完全正確！快點擊右側按鈕挑戰電流向下！";
+            document.getElementById('step5-go-down-btn').style.display = "block"; 
+            step5Stage = 'DOWN_GUIDE';
+        } else if (step5Stage === 'DOWN_PLAY') {
+            step5Stage = 'FINISHED';
+            document.getElementById('celebration-overlay').style.display = "flex"; 
+            initFireworks();
+        }
+    }
+}
+
+function triggerStep5DownExplore() {
+    document.getElementById('step5-go-down-btn').style.display = "none";
+    switchTab(false); 
+    step5Stage = 'DOWN_PLAY';
+    leftPlacedSymbol = ''; 
+    rightPlacedSymbol = ''; 
+    
+    document.getElementById('s5-stage-title').innerHTML = "🎯 挑戰二：【電流向下】投放任務";
+    document.getElementById('dz-left-content').innerHTML = `【 -X 軸 左側空間 】<br>點擊投放`;
+    document.getElementById('dz-right-content').innerHTML = `【 +X 軸 右側空間 】<br>點擊投放`;
+    document.getElementById('drag-msg').innerHTML = "";
+    document.getElementById('tk-dot').className = "click-token";
+    document.getElementById('tk-x').className = "click-token";
+}
+
+// ================= 步驟導航與初始化狀態切換 =================
+function step4Trigger3D() {
+    setView('3D');
+    document.getElementById('step4-hand-btn').style.display = "block"; 
+}
+
+function nextStep(n) {
+    currentStep = n;
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById('step' + n).classList.add('active');
+    if (n >= 2) document.getElementById('view-panel').style.display = "block";
+    
+    if (n === 2) {
+        step2Stage = 'UP_Q1'; switchTab(true); showHelperRings = false;
+        document.getElementById('s2-stage-header').innerHTML = "📊 探究任務 A：【電流向上】觀察";
+        document.getElementById('s2-q2-area').style.display = "none";
+        document.getElementById('step2-go-down-btn').style.display = "none";
+        document.getElementById('step2-next-btn').style.display = "none";
+    }
+
+    if (n === 3) {
+        step3Stage = 'UP_Q1'; switchTab(true);
+        document.getElementById('s3-quiz-area').style.display = "none";
+        document.getElementById('s3-meaning-box').style.display = "none"; 
+        document.getElementById('step3-go-down-btn').style.display = "none";
+        document.getElementById('s3-ampere-guide').style.display = "none";
+        document.getElementById('s3-ampere-box').style.display = "none";
+        document.getElementById('step3-next-btn').style.display = "none";
+    }
+    
+    if (n === 4) {
+        showHand = false; 
+        viewMode = 'FREE'; 
+        step4Stage = 'UP_Q1'; switchTab(true); 
+        document.getElementById('btn-hand').style.display = "block"; 
+        document.getElementById('btn-hand').innerText = "👋 顯示右手模型";
+        document.getElementById('step4-3d-btn').style.display = "block";
+        document.getElementById('step4-hand-btn').style.display = "none"; 
+        document.getElementById('s4-stage-header').innerHTML = "📊 定錨任務 A：【電流向上】實戰";
+        document.getElementById('s4-q1-opt1').className = "quiz-opt-btn"; document.getElementById('s4-q1-opt2').className = "quiz-opt-btn";
+        document.getElementById('s4-q1-feedback').innerHTML = "";
+        document.getElementById('s4-q2-area').style.display = "none";
+        document.getElementById('step4-go-down-btn').style.display = "none";
+        document.getElementById('step4-next-btn').style.display = "none"; 
+    } else {
+        document.getElementById('btn-hand').style.display = "none";
+    }
+    
+    if (n === 5) {
+        step5Stage = 'UP_PLAY'; switchTab(true);
+        leftPlacedSymbol = ''; rightPlacedSymbol = '';
+        document.getElementById('s5-stage-title').innerHTML = "🎯 挑戰二：【電流向上】投放任務";
+        document.getElementById('step5-go-down-btn').style.display = "none";
+        document.getElementById('dz-left-content').innerHTML = `【 -X 軸 左側空間 】<br>點擊投放`; 
+        document.getElementById('dz-right-content').innerHTML = `【 +X 軸 右側空間 】<br>點擊投放`;
+        document.getElementById('dz-left').style.display = "flex"; document.getElementById('dz-right').style.display = "flex"; setView('2D_BACK'); 
+    } else {
+        document.getElementById('dz-left').style.display = "none"; document.getElementById('dz-right').style.display = "none";
+    }
+}
+
+function backToStep4() { nextStep(4); setView('3D'); showHand = true; document.getElementById('step4-hand-btn').style.display = "block"; }
+function backToStep3From4() { nextStep(3); setView('TOP'); step3Stage = 'AMP_CHOICE'; document.getElementById('s3-quiz-area').style.display = "none"; document.getElementById('s3-ampere-box').style.display = "block"; document.getElementById('step3-next-btn').style.display = "block"; }
+
+function switchTab(isUp) {
+    if (currentStep === 2 && step2Stage === 'UP_Q1' && !isUp) return;
+    if (currentStep === 3 && step3Stage === 'UP_Q1' && !isUp) return; 
+    if (currentStep === 4 && step4Stage === 'UP_Q1' && !isUp) return; 
+    currentUp = isUp; selectedSymbol = '';
+    if(currentStep !== 5) { leftPlacedSymbol = ''; rightPlacedSymbol = ''; } 
+    document.getElementById('tab-up').className = "var-btn " + (isUp ? "active-tab" : "");
+    document.getElementById('tab-down').className = "var-btn " + (!isUp ? "active-tab down" : "");
+}
+
+// 修正：右手模型文字連動左側同步
+function toggleHand() {
+    showHand = !showHand;
+    let txt = showHand ? "👋 隱藏右手模型" : "👋 顯示右手模型";
+    document.getElementById('btn-hand').innerText = txt;
+    if(document.getElementById('step4-hand-btn')) document.getElementById('step4-hand-btn').innerText = txt;
+}
+
+function setView(mode) { 
+    viewMode = mode; 
+    if (mode === '2D_BACK') { easycam.setRotation([1, 0, 0, 0], 500); easycam.setDistance(550, 500); }
+    if (mode === '3D') { easycam.setRotation([0.99, 0.13, 0, 0], 500); easycam.setDistance(550, 500); }
+    if (mode === 'TOP') { 
+        easycam.setRotation([-0.707, 0.707, 0, 0], 500); easycam.setDistance(380, 500); 
+        if (currentStep === 3 && (step3Stage === 'UP_Q1' || step3Stage === 'UP_Q2')) document.getElementById('s3-quiz-area').style.display = "block";
+    }
+}
+
+function applyViewLock() { if (viewMode === 'TOP') { easycam.setRotation([-0.707, 0.707, 0, 0], 10); easycam.setDistance(380, 10); } }
+
+function resetSimulator() {
+    leftPlacedSymbol = ''; rightPlacedSymbol = ''; selectedSymbol = ''; step3Stage = 'UP_Q1'; step5Stage = 'UP_PLAY'; 
+    s1WrongCount = 0; showHelperRings = false; step2Stage = 'UP_Q1'; step4Stage = 'UP_Q1';
+    
+    document.getElementById('view-panel').style.display = "none"; document.getElementById('dz-left').style.display = "none"; document.getElementById('dz-right').style.display = "none";
+    document.getElementById('step1-next-btn').style.display = "none"; document.getElementById('s1-opt-v').className = "quiz-opt-btn"; document.getElementById('s1-opt-i').className = "quiz-opt-btn"; document.getElementById('s1-feedback').innerHTML = "";
+    document.getElementById('s3-ampere-box').style.display = "none"; document.getElementById('s3-amp-left').className = "quiz-opt-btn"; document.getElementById('s3-amp-right').className = "quiz-opt-btn";
+    
+    document.getElementById('btn-helper-rings').innerText = "🔮 開啟同心圓模式"; document.getElementById('btn-helper-rings').style.background = "#9b59b6";
+    document.getElementById('btn-left-rings').innerText = "🔮 開啟同心圓模式"; document.getElementById('btn-left-rings').style.background = "#6c5ce7";
+    document.getElementById('s2-stage-header').innerHTML = "📊 探究任務 A：【電流向上】觀察";
+    document.getElementById('s2-q1-opt1').className = "quiz-opt-btn"; document.getElementById('s2-q1-opt2').className = "quiz-opt-btn";
+    document.getElementById('s2-q2-opt1').className = "quiz-opt-btn"; document.getElementById('s2-q2-opt2').className = "quiz-opt-btn";
+    document.getElementById('s2-q1-feedback').innerHTML = ""; document.getElementById('s2-q2-feedback').innerHTML = "";
+    document.getElementById('s2-q2-area').style.display = "none"; document.getElementById('step2-go-down-btn').style.display = "none";
+    document.getElementById('step2-next-btn').style.display = "none";
+    
+    document.getElementById('s3-meaning-box').style.display = "none";
+    document.getElementById('s3-mean-opt1').className = "quiz-opt-btn"; document.getElementById('s3-mean-opt2').className = "quiz-opt-btn";
+    document.getElementById('s3-meaning-feedback').innerHTML = "";
+
+    nextStep(1); setView('2D_BACK');
+}
+
+function windowResized() { resizeCanvas(windowWidth, windowHeight); if(fwCanvas) { fwCanvas.width = window.innerWidth; fwCanvas.height = window.innerHeight; } }
+
+// ================= HTML5 Canvas 煙火動畫引擎 =================
+let fwCanvas, fwCtx, particles = [];
+function initFireworks() {
+    fwCanvas = document.getElementById('fireworks-canvas'); fwCtx = fwCanvas.getContext('2d');
+    fwCanvas.width = window.innerWidth; fwCanvas.height = window.innerHeight; particles = []; animateFireworks();
+}
+function animateFireworks() {
+    if(step5Stage !== 'FINISHED') return;
+    requestAnimationFrame(animateFireworks);
+    fwCtx.fillStyle = 'rgba(5, 5, 5, 0.2)'; fwCtx.fillRect(0, 0, fwCanvas.width, fwCanvas.height);
+    if (random(1) < 0.1) {
+        let x = random(fwCanvas.width), y = random(fwCanvas.height * 0.5);
+        let col = `hsl(${random(360)}, 100%, 65%)`;
+        
+        let _pCount = ((0x54 >> 1) + 42); 
+        for(let i=0; i<_pCount; i++) particles.push({ x:x, y:y, vx:random(-4.5,4.5), vy:random(-5,3), alpha:1, color:col });
+    }
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i]; p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.alpha -= 0.014;
+        if(p.alpha <= 0) { particles.splice(i,1); continue; }
+        fwCtx.save(); fwCtx.globalAlpha = p.alpha; fwCtx.fillStyle = p.color;
+        fwCtx.beginPath(); fwCtx.arc(p.x, p.y, 3.5, 0, TWO_PI); fwCtx.fill(); fwCtx.restore();
+    }
+}
+function closeCelebration() { document.getElementById('celebration-overlay').style.display = "none"; resetSimulator(); }
+</script>
+</body>
+</html>

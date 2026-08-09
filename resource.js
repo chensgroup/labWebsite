@@ -59,6 +59,37 @@
     document.addEventListener('keydown', escToClose);
   }
 
+  function openModalWithIframe(title, url) {
+    nameEl.textContent = title;
+    if (nameMobileEl) nameMobileEl.textContent = title;
+
+    const isEn = document.documentElement.lang === 'en';
+    const openNewTabLabel = isEn ? 'Open in New Tab' : '在新分頁開啟';
+
+    infoEl.innerHTML = `
+      <div style="margin-bottom: 10px; text-align: right;">
+        <a href="${encodeURI(url)}" target="_blank" rel="noopener" style="display: inline-block; padding: 6px 14px; background: #007bff; color: #fff; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500;">
+          ↗ ${openNewTabLabel}
+        </a>
+      </div>
+      <iframe src="${encodeURI(url)}" style="width: 100%; height: min(68vh, 600px); min-height: 420px; border: 1px solid #ddd; border-radius: 8px; background: #fff;" title="${title}" allowfullscreen></iframe>
+    `;
+
+    if (window.matchMedia('(max-width: 720px)').matches) {
+      if (topbar) topbar.style.display = 'flex';
+    } else {
+      if (topbar) topbar.style.display = 'none';
+    }
+
+    modal.style.display = 'block';
+    modal.setAttribute('aria-hidden', 'false');
+    lockBodyScroll();
+
+    if (bodyEl) bodyEl.scrollTop = 0;
+
+    document.addEventListener('keydown', escToClose);
+  }
+
   function closeModal() {
     modal.style.display = 'none';
     modal.setAttribute('aria-hidden', 'true');
@@ -101,6 +132,22 @@
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         openModalFromCard(card);
+      }
+    });
+  });
+
+  const modalButtons = document.querySelectorAll('.resource-modal-btn');
+  modalButtons.forEach(btn => {
+    const title = btn.dataset.title || btn.textContent.trim();
+    const url = btn.dataset.url || '';
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      if (url) openModalWithIframe(title, url);
+    });
+    btn.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (url) openModalWithIframe(title, url);
       }
     });
   });

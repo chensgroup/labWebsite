@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>耦合擺：模態分解、正交性與能量</title>
+
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\(', '\\)']],
+    displayMath: [['\\[', '\\]']]
+  },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  font-family: "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
+  background: #f4f6f8;
+  margin: 0;
+  padding: 16px;
+  color: #263238;
+}
+
+.wrap {
+  max-width: 1280px;
+  margin: auto;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+h1 {
+  margin-top: 0;
+  margin-bottom: 14px;
+  font-size: 28px;
+  color: #1f3a5f;
+}
+
+.hint-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #2f80ed;
+  color: #fff;
+  font-weight: 800;
+  font-size: 19px;
+  cursor: pointer;
+  border: none;
+  margin-left: 8px;
+  vertical-align: middle;
+  transition: background 0.2s, transform 0.2s;
+  line-height: 1;
+}
+.hint-btn:hover {
+  background: #1a6ad4;
+  transform: scale(1.08);
+}
+
+.popup-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.55);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+}
+.popup-overlay.active { display: flex; }
+
+.popup-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 28px 32px 24px;
+  max-width: 820px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 14px 44px rgba(0,0,0,0.28);
+  position: relative;
+  line-height: 1.72;
+  font-size: 17px;
+}
+
+.popup-close {
+  position: sticky;
+  top: 0;
+  float: right;
+  font-size: 30px;
+  cursor: pointer;
+  color: #8899a6;
+  background: none;
+  border: none;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 4px;
+  z-index: 10;
+}
+.popup-close:hover { color: #263238; }
+
+.popup-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  margin-top: 8px;
+}
+.popup-col { line-height: 1.7; }
+.popup-col p { margin: 9px 0; }
+
+.popup-card h3 {
+  margin: 0 0 10px;
+  font-size: 21px;
+  color: #1f3a5f;
+}
+
+.orangeText { color: #e67e22; font-weight: 700; }
+.purpleText { color: #8e44ad; font-weight: 700; }
+
+.top-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.intro, .task {
+  padding: 13px 16px;
+  border-radius: 10px;
+  line-height: 1.65;
+  font-size: 16px;
+}
+
+.intro {
+  background: #eef6ff;
+  border-left: 5px solid #2f80ed;
+}
+
+.task {
+  background: #fff9e8;
+  border-left: 5px solid #f2c94c;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 1.45fr 0.9fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.left-area { min-width: 0; }
+
+canvas {
+  width: 100%;
+  background: #fbfcfd;
+  border: 1px solid #d9e2ec;
+  border-radius: 14px;
+  display: block;
+}
+
+.panel {
+  background: #f7f9fb;
+  border-radius: 14px;
+  padding: 14px;
+  border: 1px solid #dde5ed;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+button {
+  border: none;
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: white;
+  font-weight: 700;
+  white-space: nowrap;
+  font-size: 15px;
+}
+button:hover { opacity: 0.88; }
+
+.blue { background: #2f80ed; }
+.gray { background: #7f8c8d; }
+.orange { background: #e67e22; }
+.purple { background: #8e44ad; }
+.green { background: #27ae60; }
+
+.control { margin-bottom: 10px; }
+
+label {
+  font-weight: 700;
+  display: block;
+  margin-bottom: 3px;
+}
+
+input[type="range"] { width: 100%; }
+
+.value {
+  font-family: monospace;
+  color: #455a64;
+  font-size: 14px;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 14px 16px;
+  border: 1px solid #d9e3ec;
+  overflow: hidden;
+}
+
+.card h3 {
+  margin: 0 0 6px;
+  color: #263238;
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.main-info-outside {
+  margin-top: 10px;
+  padding: 10px 18px 12px;
+  background: #fbfcfd;
+  border: 1px solid #d9e2ec;
+  border-radius: 14px;
+}
+
+.main-title-outside {
+  color: #1f3a5f;
+  font-weight: 800;
+  font-size: 23px;
+  margin-bottom: 8px;
+}
+
+.main-info-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 18px;
+  align-items: center;
+}
+
+.qplus-outside, .qminus-outside {
+  font-weight: 800;
+  font-size: 21px;
+  line-height: 1.55;
+}
+
+.qplus-outside { color: #e67e22; }
+.qminus-outside { color: #8e44ad; }
+
+.main-param-outside {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  justify-content: flex-start;
+  color: #607d8b;
+  font-weight: 800;
+  font-size: 19px;
+  line-height: 1.6;
+}
+
+.row-under-pendulum {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+  align-items: stretch;
+}
+
+.top-info-row { grid-template-columns: 1.38fr 0.62fr; }
+
+.observation-card {
+  line-height: 1.55;
+  font-size: 15px;
+}
+.observation-card h3 { font-size: 18px; }
+.observation-card p { margin: 6px 0 8px; }
+
+.modal-vector-card { min-width: 0; padding: 12px 14px; }
+.modal-vector-card h3 { font-size: 18px; }
+.modal-vector-card canvas {
+  width: 100%;
+  height: auto;
+}
+
+.lower-info-row { grid-template-columns: 0.62fr 1.38fr; }
+
+.left-bottom-stack {
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 12px;
+  min-width: 0;
+}
+
+.angle-table-card table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  font-size: 17px;
+}
+.angle-table-card th, .angle-table-card td {
+  border: 1px solid #d5dee8;
+  text-align: center;
+  padding: 8px 5px;
+}
+.angle-table-card th {
+  background: #edf3f8;
+  font-weight: 700;
+}
+
+.legend-card { padding: 10px 12px; }
+
+.legend-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #263238;
+}
+
+.legend-left-bottom {
+  display: grid;
+  grid-template-rows: auto auto;
+  row-gap: 8px;
+  margin-top: 0;
+}
+.legend-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 12px;
+  align-items: center;
+}
+.legend-left-bottom span {
+  white-space: nowrap;
+  font-size: 15px;
+}
+.legend-left-bottom span::before {
+  content: "";
+  display: inline-block;
+  width: 26px;
+  height: 5px;
+  border-radius: 999px;
+  margin-right: 7px;
+  vertical-align: middle;
+}
+
+.l-theta1::before { background: #e67e22; }
+.l-theta2::before { background: #2f80ed; }
+.l-qplus::before { background: #27ae60; }
+.l-qminus::before { background: #8e44ad; }
+
+.time-graph-card canvas {
+  width: 100%;
+  height: auto;
+}
+
+.side-energy-card { margin-top: 16px; }
+
+.side-energy-card canvas {
+  width: 100%;
+  height: auto;
+  background: #fbfcfd;
+  border: 1px solid #d9e3ec;
+  border-radius: 14px;
+  display: block;
+}
+
+.energy-legend-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 12px;
+  font-size: 15px;
+  line-height: 1.45;
+  align-items: center;
+}
+.energy-item { white-space: nowrap; }
+.energy-item::before {
+  content: "";
+  display: inline-block;
+  width: 28px;
+  height: 0;
+  border-top-width: 4px;
+  border-top-style: solid;
+  border-radius: 999px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.kinetic-line::before { border-top-color: #ef5350; }
+.gravity-line::before {
+  border-top-color: #66bb6a;
+  border-top-style: dashed;
+}
+.spring-line::before {
+  border-top-color: #ab47bc;
+  border-top-style: dashed;
+}
+.potential-line::before { border-top-color: #42a5f5; }
+.total-line::before { border-top-color: #263238; }
+
+.energy-note {
+  margin: 10px 0 0;
+  color: #607d8b;
+  font-size: 17px;
+  line-height: 1.65;
+  font-weight: 500;
+}
+
+@media(max-width: 980px) {
+  .top-grid,
+  .main-grid,
+  .top-info-row,
+  .lower-info-row,
+  .main-info-grid,
+  .popup-two-col {
+    grid-template-columns: 1fr;
+  }
+  body { padding: 10px; }
+  .wrap { padding: 14px; }
+  .popup-card { max-width: 95vw; padding: 20px; }
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <h1>
+    耦合擺：從運動到「正交模態」
+    <button class="hint-btn" id="hintBtn" title="點我查看模態說明">?</button>
+  </h1>
+
+  <div class="popup-overlay" id="popupOverlay">
+    <div class="popup-card" id="popupCard">
+      <button class="popup-close" id="popupClose">&times;</button>
+      <h3>正交模態分析</h3>
+
+      <div class="popup-two-col">
+        <div class="popup-col">
+          <p>
+            在對稱耦合雙擺系統中，使用 \(q_+\)（同相模態成分）和 \(q_-\)（反相模態成分）
+            可以更清楚地描述雙擺的整體運動模式。
+          </p>
+
+          <p>
+          \[
+          q_+ = \frac{\theta_1 + \theta_2}{2}
+          \qquad
+          q_- = \frac{\theta_1 - \theta_2}{2}
+          \]
+          </p>
+
+          <p>
+            其中，\(\theta_1\)、\(\theta_2\) 分別為兩個擺相對鉛直方向的角度。
+          </p>
+
+          <p>
+            \(q_+\) 代表雙擺的同相運動成分（兩個擺朝相同方向移動）。<br>
+            \(q_-\) 代表反相運動成分（兩個擺朝相反方向移動）。
+          </p>
+
+          <p>這兩種模態具有不同的自然頻率。</p>
+
+          <p>
+            當 \(\theta_1 \approx \theta_2\) 時，\(q_+\) 主導 → 雙擺同相擺動<br>
+            當 \(\theta_1 \approx -\theta_2\) 時，\(q_-\) 主導 → 雙擺反相擺動
+          </p>
+
+          <p>
+            可逆轉換關係：<br>
+            \(\theta_1 = q_+ + q_-\)<br>
+            \(\theta_2 = q_+ - q_-\)
+          </p>
+
+          <p>
+            繩長 \(L\) 改變基礎頻率：
+            \[
+            \omega_0=\sqrt{\frac{g}{L}}
+            \]
+          </p>
+        </div>
+
+        <div class="popup-col">
+          <p>
+            同相模態頻率：
+            \[
+            \omega_+ = \sqrt{\frac{g}{L}}
+            \]
+          </p>
+
+          <p>
+            反相模態頻率：
+            \[
+            \omega_- = \sqrt{\frac{g}{L} + \frac{2k}{m}}
+            \]
+          </p>
+
+          <p style="margin-top:18px;">
+            <span class="orangeText">同相模態 \(\mathbf v_+ = (1,1)\)</span><br>
+            兩個擺朝相同方向運動。
+          </p>
+
+          <p>
+            <span class="purpleText">反相模態 \(\mathbf v_- = (1,-1)\)</span><br>
+            兩個擺朝相反方向運動。
+          </p>
+
+          <p style="margin-top:18px;">
+            \[
+            (\theta_1,\theta_2) = q_+\mathbf v_+ + q_-\mathbf v_-
+            \]
+          </p>
+
+          <p>
+            任意耦合擺運動，都可以看成這兩個特殊運動模式的疊加。
+            這兩個模式就像二維空間中的兩個正交基底。
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="top-grid">
+    <div class="intro">
+      <b>模擬重點：</b><br>
+      這個模擬的重點不是只看兩個擺在動，而是觀察：
+      <b>任意耦合擺運動，都可以看成兩個特殊運動模式的疊加。</b>
+      這兩個模式分別是 <b>同相模態</b> 與 <b>反相模態</b>，
+      它們就像二維空間中的兩個正交基底。
+    </div>
+
+    <div class="task">
+      <b>學生操作任務：</b><br>
+      1. 按「同相模態」，觀察兩擺是否一直同方向運動。<br>
+      2. 按「反相模態」，觀察兩擺是否一直反方向運動。<br>
+      3. 調整 \(A_+\)、\(A_-\)、繩長與質量，觀察一般運動如何由兩個模態疊加而成。<br>
+      4. 思考：為什麼這兩個模態可以作為「基底」？
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div class="left-area">
+      <canvas id="canvas" width="900" height="460"></canvas>
+
+      <div class="main-info-outside">
+        <div class="main-title-outside">目前運動 = 同相模態 + 反相模態</div>
+
+        <div class="main-info-grid">
+          <div>
+            <div id="qPlusOutside" class="qplus-outside">q<sub>+</sub> = --</div>
+            <div id="qMinusOutside" class="qminus-outside">q<sub>-</sub> = --</div>
+          </div>
+
+          <div class="main-param-outside">
+            <span id="timeOutside">時間 t = --</span>
+            <span id="lengthOutside">繩長 L = --</span>
+            <span id="massOutside">m₁ = --, m₂ = --</span>
+            <span id="dampingOutside">阻尼 b = --</span>
+            <span id="omegaOutside">ω<sub>+</sub> = --, ω<sub>-</sub> = -- rad/s</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第二張圖：圖在左，觀察提示在右 -->
+      <div class="row-under-pendulum top-info-row">
+        <div class="card modal-vector-card">
+          <h3>動態向量：模態座標</h3>
+          <canvas id="modalVectorCanvas" width="850" height="380"></canvas>
+        </div>
+
+        <div class="card observation-card">
+          <h3>觀察提示</h3>
+          <p><b>動態向量：模態座標</b></p>
+          <p>橫軸是 \(q_+\)，縱軸是 \(q_-\)，單位都是度（°）。</p>
+          <p>只開啟 \(A_+\) 時主要沿 \(q_+\) 軸；只開啟 \(A_-\) 時主要沿 \(q_-\) 軸。</p>
+          <p>兩個模態同時存在時，運動可視為 \((q_+,q_-)\) 平面中的向量變化。</p>
+          <hr style="border:none; border-top:1px solid #d9e3ec; margin:10px 0;">
+          <p><b>振幅 A 與模態座標 q 的關係：</b></p>
+          <p>
+            \(\displaystyle q_+(t) = A_+ \cos(\omega_+ t)\)<br>
+            \(\displaystyle q_-(t) = A_- \cos(\omega_- t)\)
+          </p>
+          <p>
+            \(A_+\)、\(A_-\) 是振幅（同相／反相模態的最大角位移）<br>
+            \(q_+(t)\)、\(q_-(t)\) 是隨時間變化的模態座標
+          </p>
+        </div>
+      </div>
+
+      <!-- 第三張圖：文字在左、圖在右 -->
+      <div class="row-under-pendulum lower-info-row">
+        <div class="left-bottom-stack">
+          <div class="card angle-table-card">
+            <h3>目前角度分解</h3>
+            <table>
+              <tr><th>量</th><th>數值</th></tr>
+              <tr><td>\(\theta_1\)</td><td id="theta1Cell">--</td></tr>
+              <tr><td>\(\theta_2\)</td><td id="theta2Cell">--</td></tr>
+              <tr><td>\(q_+ = \dfrac{\theta_1+\theta_2}{2}\)</td><td id="qPlusCell">--</td></tr>
+              <tr><td>\(q_- = \dfrac{\theta_1-\theta_2}{2}\)</td><td id="qMinusCell">--</td></tr>
+            </table>
+          </div>
+
+          <div class="card legend-card">
+            <div class="legend-title">時間函數圖標籤</div>
+            <div class="legend-left-bottom">
+              <div class="legend-row">
+                <span class="l-theta1">\(\theta_1(t)\)</span>
+                <span class="l-theta2">\(\theta_2(t)\)</span>
+              </div>
+              <div class="legend-row">
+                <span class="l-qplus">\(q_+(t)\)</span>
+                <span class="l-qminus">\(q_-(t)\)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card time-graph-card">
+          <h3>時間函數圖：角度與模態成分隨時間變化</h3>
+          <canvas id="historyCanvas" width="820" height="310"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="button-row">
+        <button class="blue" id="playBtn">暫停</button>
+        <button class="gray" id="resetBtn">重置時間</button>
+        <button class="orange" id="symBtn">同相模態</button>
+        <button class="purple" id="antiBtn">反相模態</button>
+        <button class="green" id="mixBtn">混合運動</button>
+      </div>
+
+      <div class="control">
+        <label>同相模態振幅 \(A_+\)</label>
+        <input type="range" id="ampPlus" min="-50" max="50" value="18">
+        <div class="value" id="ampPlusVal">18°</div>
+      </div>
+
+      <div class="control">
+        <label>反相模態振幅 \(A_-\)</label>
+        <input type="range" id="ampMinus" min="-50" max="50" value="10">
+        <div class="value" id="ampMinusVal">10°</div>
+      </div>
+
+      <div class="control">
+        <label>繩長 \(L\)</label>
+        <input type="range" id="lengthSlider" min="10" max="100" value="50" step="1">
+        <div class="value" id="lengthVal">50 cm</div>
+      </div>
+
+      <div class="control">
+        <label>質量 \(m_1\) (擺1)、\(m_2\) (擺2)</label>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div>
+            <div style="margin-bottom:3px;">\(m_1\) (g)</div>
+            <input type="range" id="mass1Slider" min="100" max="1000" value="500" step="50">
+            <div class="value" id="mass1Val">500 g</div>
+          </div>
+          <div>
+            <div style="margin-bottom:3px;">\(m_2\) (g)</div>
+            <input type="range" id="mass2Slider" min="100" max="1000" value="500" step="50">
+            <div class="value" id="mass2Val">500 g</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="control">
+        <label>彈簧常數 \(k\)</label>
+        <input type="range" id="coupling" min="0" max="100" value="35">
+        <div class="value" id="couplingVal">0.35</div>
+      </div>
+
+      <div class="control">
+        <label>阻尼 \(b\)</label>
+        <input type="range" id="damping" min="0" max="50" value="0">
+        <div class="value" id="dampingVal">0.00</div>
+      </div>
+
+      <div class="control">
+        <label>動畫速度</label>
+        <input type="range" id="speed" min="10" max="150" value="55">
+        <div class="value" id="speedVal">0.55 倍</div>
+      </div>
+
+      <div class="card side-energy-card">
+        <h3>能量圖：動能、重力位能、彈力位能與總能</h3>
+
+        <canvas id="energyCanvas" width="560" height="430"></canvas>
+
+        <div class="energy-legend-bottom">
+          <span class="energy-item kinetic-line">動能 \(K(t)\)</span>
+          <span class="energy-item gravity-line">重力位能 \(U_g(t)\)</span>
+          <span class="energy-item spring-line">彈力位能 \(U_s(t)\)</span>
+          <span class="energy-item potential-line">總位能 \(U(t)=U_g+U_s\)</span>
+          <span class="energy-item total-line">總能 \(E(t)=K+U\)</span>
+        </div>
+
+        <p class="energy-note">
+          已修正能量係數：當 \(b=0\) 時，黑色總能 \(E\) 會近似保持水平。
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== 彈窗控制 =====
+const popupOverlay = document.getElementById("popupOverlay");
+const hintBtn = document.getElementById("hintBtn");
+const popupClose = document.getElementById("popupClose");
+
+hintBtn.addEventListener("click", () => {
+  popupOverlay.classList.add("active");
+});
+
+popupClose.addEventListener("click", () => {
+  popupOverlay.classList.remove("active");
+});
+
+popupOverlay.addEventListener("click", (e) => {
+  if (e.target === popupOverlay) {
+    popupOverlay.classList.remove("active");
+  }
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && popupOverlay.classList.contains("active")) {
+    popupOverlay.classList.remove("active");
+  }
+});
+
+// ===== 主程式 =====
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const modalVectorCanvas = document.getElementById("modalVectorCanvas");
+const mvctx = modalVectorCanvas.getContext("2d");
+
+const historyCanvas = document.getElementById("historyCanvas");
+const hctx = historyCanvas.getContext("2d");
+
+const energyCanvas = document.getElementById("energyCanvas");
+const ectx = energyCanvas.getContext("2d");
+
+let running = true;
+let t = 0;
+
+let Aplus = 18 * Math.PI / 180;
+let Aminus = 10 * Math.PI / 180;
+let pendulumLength = 0.50;
+let m1 = 0.50;
+let m2 = 0.50;
+let coupling = 0.35;
+let damping = 0.00;
+let speed = 0.55;
+
+const g = 9.8;
+const historyMax = 560;
+let history = [];
+
+const playBtn = document.getElementById("playBtn");
+const resetBtn = document.getElementById("resetBtn");
+const symBtn = document.getElementById("symBtn");
+const antiBtn = document.getElementById("antiBtn");
+const mixBtn = document.getElementById("mixBtn");
+
+const ampPlus = document.getElementById("ampPlus");
+const ampMinus = document.getElementById("ampMinus");
+const lengthSlider = document.getElementById("lengthSlider");
+const mass1Slider = document.getElementById("mass1Slider");
+const mass2Slider = document.getElementById("mass2Slider");
+const couplingSlider = document.getElementById("coupling");
+const dampingSlider = document.getElementById("damping");
+const speedSlider = document.getElementById("speed");
+
+const ampPlusVal = document.getElementById("ampPlusVal");
+const ampMinusVal = document.getElementById("ampMinusVal");
+const lengthVal = document.getElementById("lengthVal");
+const mass1Val = document.getElementById("mass1Val");
+const mass2Val = document.getElementById("mass2Val");
+const couplingVal = document.getElementById("couplingVal");
+const dampingVal = document.getElementById("dampingVal");
+const speedVal = document.getElementById("speedVal");
+
+const theta1Cell = document.getElementById("theta1Cell");
+const theta2Cell = document.getElementById("theta2Cell");
+const qPlusCell = document.getElementById("qPlusCell");
+const qMinusCell = document.getElementById("qMinusCell");
+
+const qPlusOutside = document.getElementById("qPlusOutside");
+const qMinusOutside = document.getElementById("qMinusOutside");
+const timeOutside = document.getElementById("timeOutside");
+const lengthOutside = document.getElementById("lengthOutside");
+const massOutside = document.getElementById("massOutside");
+const dampingOutside = document.getElementById("dampingOutside");
+const omegaOutside = document.getElementById("omegaOutside");
+
+function degToRad(deg) {
+  return deg * Math.PI / 180;
+}
+
+function radToDeg(rad) {
+  return rad * 180 / Math.PI;
+}
+
+function getOmega0() {
+  return Math.sqrt(g / pendulumLength);
+}
+
+function updateSliderTexts() {
+  ampPlusVal.textContent = `${ampPlus.value}°`;
+  ampMinusVal.textContent = `${ampMinus.value}°`;
+  lengthVal.textContent = `${Math.round(pendulumLength * 100)} cm`;
+  mass1Val.textContent = `${Math.round(m1 * 1000)} g`;
+  mass2Val.textContent = `${Math.round(m2 * 1000)} g`;
+  couplingVal.textContent = (couplingSlider.value / 100).toFixed(2);
+  dampingVal.textContent = (dampingSlider.value / 100).toFixed(2);
+  speedVal.textContent = (speedSlider.value / 100).toFixed(2) + " 倍";
+}
+
+function setValuesFromSliders() {
+  Aplus = degToRad(Number(ampPlus.value));
+  Aminus = degToRad(Number(ampMinus.value));
+  pendulumLength = Number(lengthSlider.value) / 100;
+  m1 = Number(mass1Slider.value) / 1000;
+  m2 = Number(mass2Slider.value) / 1000;
+  coupling = Number(couplingSlider.value) / 100;
+  damping = Number(dampingSlider.value) / 100;
+  speed = Number(speedSlider.value) / 100;
+  updateSliderTexts();
+}
+
+function clearHistory() {
+  history = [];
+}
+
+function setPreset(type) {
+  if (type === "sym") {
+    ampPlus.value = 20;
+    ampMinus.value = 0;
+  } else if (type === "anti") {
+    ampPlus.value = 0;
+    ampMinus.value = 20;
+  } else if (type === "mix") {
+    ampPlus.value = 18;
+    ampMinus.value = 10;
+  }
+
+  t = 0;
+  clearHistory();
+  setValuesFromSliders();
+}
+
+playBtn.onclick = () => {
+  running = !running;
+  playBtn.textContent = running ? "暫停" : "繼續";
+};
+
+resetBtn.onclick = () => {
+  t = 0;
+  clearHistory();
+};
+
+symBtn.onclick = () => setPreset("sym");
+antiBtn.onclick = () => setPreset("anti");
+mixBtn.onclick = () => setPreset("mix");
+
+ampPlus.oninput = () => {
+  t = 0;
+  clearHistory();
+  setValuesFromSliders();
+};
+
+ampMinus.oninput = () => {
+  t = 0;
+  clearHistory();
+  setValuesFromSliders();
+};
+
+lengthSlider.oninput = () => {
+  t = 0;
+  clearHistory();
+  setValuesFromSliders();
+};
+
+mass1Slider.oninput = () => {
+  t = 0;
+  clearHistory();
+  setValuesFromSliders();
+};
+
+mass2Slider.oninput = () => {
+  t = 0;
+  clearHistory();
+  setValuesFromSliders();
+};
+
+couplingSlider.oninput = () => {
+  t = 0;
+  clearHistory();
+  setValuesFromSliders();
+};
+
+dampingSlider.oninput = () => {
+  t = 0;
+  clearHistory();
+  setValuesFromSliders();
+};
+
+speedSlider.oninput = setValuesFromSliders;
+
+function getState(time) {
+  const omega0 = getOmega0();
+  const wPlus = omega0;
+  const wMinus = omega0 * Math.sqrt(1 + 2 * coupling);
+  const envelope = Math.exp(-damping * time);
+
+  const qPlus = Aplus * envelope * Math.cos(wPlus * time);
+  const qMinus = Aminus * envelope * Math.cos(wMinus * time);
+
+  const theta1 = qPlus + qMinus;
+  const theta2 = qPlus - qMinus;
+
+  return { theta1, theta2, qPlus, qMinus, wPlus, wMinus };
+}
+
+function computeEnergy(time) {
+  const omega0 = getOmega0();
+  const wPlus = omega0;
+  const wMinus = omega0 * Math.sqrt(1 + 2 * coupling);
+
+  const cosP = Math.cos(wPlus * time);
+  const sinP = Math.sin(wPlus * time);
+  const cosM = Math.cos(wMinus * time);
+  const sinM = Math.sin(wMinus * time);
+
+  const decay = Math.exp(-2 * damping * time);
+
+  const qPlusIdeal = Aplus * cosP;
+  const qMinusIdeal = Aminus * cosM;
+
+  const qPlusDotIdeal = -Aplus * wPlus * sinP;
+  const qMinusDotIdeal = -Aminus * wMinus * sinM;
+
+  const kinetic =
+    decay *
+    m1 * pendulumLength * pendulumLength *
+    (
+      qPlusDotIdeal * qPlusDotIdeal +
+      qMinusDotIdeal * qMinusDotIdeal
+    );
+
+  const gravityPotential =
+    decay *
+    m1 * g * pendulumLength *
+    (
+      qPlusIdeal * qPlusIdeal +
+      qMinusIdeal * qMinusIdeal
+    );
+
+  const springPotential =
+    decay *
+    2 * m1 * g * pendulumLength * coupling *
+    qMinusIdeal * qMinusIdeal;
+
+  const potential = gravityPotential + springPotential;
+  const total = kinetic + potential;
+
+  return {
+    kinetic,
+    gravityPotential,
+    springPotential,
+    potential,
+    total
+  };
+}
+
+function drawSpring(x1, y1, x2, y2) {
+  const coils = 12;
+  const amp = 6;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.sqrt(dx * dx + dy * dy);
+  if (len < 1) return;
+
+  const px = -dy / len;
+  const py = dx / len;
+
+  ctx.beginPath();
+
+  for (let i = 0; i <= coils; i++) {
+    const s = i / coils;
+    const zig = i === 0 || i === coils ? 0 : (i % 2 === 0 ? amp : -amp);
+    const x = x1 + dx * s + px * zig;
+    const y = y1 + dy * s + py * zig;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+
+  ctx.strokeStyle = "#e74c3c";
+  ctx.lineWidth = 2.3;
+  ctx.stroke();
+}
+
+function getDrawLengthPx() {
+  const minM = 0.10;
+  const maxM = 1.00;
+  const minPx = 70;
+  const maxPx = 355;
+
+  const ratio = (pendulumLength - minM) / (maxM - minM);
+  return minPx + ratio * (maxPx - minPx);
+}
+
+function getBobRadius1() {
+  const minKg = 0.10;
+  const maxKg = 1.00;
+  const minR = 12;
+  const maxR = 27;
+
+  const ratio = (m1 - minKg) / (maxKg - minKg);
+  return minR + ratio * (maxR - minR);
+}
+
+function getBobRadius2() {
+  const minKg = 0.10;
+  const maxKg = 1.00;
+  const minR = 12;
+  const maxR = 27;
+
+  const ratio = (m2 - minKg) / (maxKg - minKg);
+  return minR + ratio * (maxR - minR);
+}
+
+function drawMain(state) {
+  const { theta1, theta2 } = state;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const barY = 32;
+  const barH = 13;
+  const barBottom = barY + barH;
+
+  const pivot1X = canvas.width * 0.34;
+  const pivot2X = canvas.width * 0.61;
+
+  const Lpx = getDrawLengthPx();
+  const bobRadius1 = getBobRadius1();
+  const bobRadius2 = getBobRadius2();
+
+  const x1 = pivot1X + Lpx * Math.sin(theta1);
+  const y1 = barBottom + Lpx * Math.cos(theta1);
+  const x2 = pivot2X + Lpx * Math.sin(theta2);
+  const y2 = barBottom + Lpx * Math.cos(theta2);
+
+  ctx.fillStyle = "#34495e";
+  ctx.fillRect(canvas.width * 0.23, barY, canvas.width * 0.55, barH);
+
+  ctx.fillStyle = "#2c3e50";
+  ctx.beginPath();
+  ctx.arc(pivot1X, barBottom, 5, 0, Math.PI * 2);
+  ctx.arc(pivot2X, barBottom, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "#455a64";
+  ctx.lineWidth = 2.5;
+
+  ctx.beginPath();
+  ctx.moveTo(pivot1X, barBottom);
+  ctx.lineTo(x1, y1);
+  ctx.moveTo(pivot2X, barBottom);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+
+  drawSpring(x1, y1, x2, y2);
+
+  ctx.fillStyle = "#e67e22";
+  ctx.beginPath();
+  ctx.arc(x1, y1, bobRadius1, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#2f80ed";
+  ctx.beginPath();
+  ctx.arc(x2, y2, bobRadius2, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "white";
+  ctx.font = `bold ${Math.max(14, bobRadius1 * 0.75)}px Arial`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("1", x1, y1);
+  ctx.fillText("2", x2, y2);
+
+  ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = "#1c2833";
+  ctx.font = "bold 24px Arial";
+  ctx.fillText("擺 1", pivot1X, barY - 8);
+  ctx.fillText("擺 2", pivot2X, barY - 8);
+}
+
+function drawModalVector(state) {
+  const W = modalVectorCanvas.width;
+  const H = modalVectorCanvas.height;
+
+  const xMaxDeg = 60;
+  const yMaxDeg = 60;
+  const padL = 80;
+  const padR = 115;
+  const padT = 40;
+  const padB = 40;
+
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+
+  function xMap(deg) {
+    return padL + ((deg + xMaxDeg) / (2 * xMaxDeg)) * plotW;
+  }
+
+  function yMap(deg) {
+    return padT + ((yMaxDeg - deg) / (2 * yMaxDeg)) * plotH;
+  }
+
+  const xMin = xMap(-xMaxDeg);
+  const xMax = xMap(xMaxDeg);
+  const yTop = yMap(yMaxDeg);
+  const yBottom = yMap(-yMaxDeg);
+  const cx = xMap(0);
+  const cy = yMap(0);
+
+  mvctx.clearRect(0, 0, W, H);
+  mvctx.fillStyle = "#fbfcfd";
+  mvctx.fillRect(0, 0, W, H);
+
+  mvctx.strokeStyle = "#e2e8ee";
+  mvctx.lineWidth = 1;
+
+  for (let d = -60; d <= 60; d += 20) {
+    const x = xMap(d);
+    const y = yMap(d);
+
+    mvctx.beginPath();
+    mvctx.moveTo(x, yTop);
+    mvctx.lineTo(x, yBottom);
+    mvctx.stroke();
+
+    mvctx.beginPath();
+    mvctx.moveTo(xMin, y);
+    mvctx.lineTo(xMax, y);
+    mvctx.stroke();
+  }
+
+  mvctx.strokeStyle = "#e7edf3";
+  mvctx.lineWidth = 2;
+  mvctx.strokeRect(xMin, yTop, plotW, plotH);
+
+  mvctx.strokeStyle = "#455a64";
+  mvctx.lineWidth = 2.2;
+  mvctx.beginPath();
+  mvctx.moveTo(xMin, cy);
+  mvctx.lineTo(xMax, cy);
+  mvctx.moveTo(cx, yBottom);
+  mvctx.lineTo(cx, yTop);
+  mvctx.stroke();
+
+  mvctx.fillStyle = "#1c2833";
+  mvctx.font = "bold 20px Arial";
+  mvctx.textBaseline = "middle";
+
+  mvctx.textAlign = "left";
+  mvctx.fillText("q+ (°)", xMax + 20, cy);
+
+  mvctx.textAlign = "center";
+  mvctx.fillText("q− (°)", cx, yTop - 26);
+
+  mvctx.fillStyle = "#37474f";
+  mvctx.font = "bold 18px Arial";
+
+  mvctx.textAlign = "center";
+  mvctx.fillText("-60°", xMin, cy + 36);
+  mvctx.fillText("+60°", xMax, cy + 36);
+
+  mvctx.textAlign = "right";
+  mvctx.fillText("+60°", cx - 12, yTop - 2);
+  mvctx.fillText("-60°", cx - 12, yBottom + 18);
+
+  const qx = radToDeg(state.qPlus);
+  const qy = radToDeg(state.qMinus);
+
+  const x = xMap(qx);
+  const y = yMap(qy);
+
+  mvctx.strokeStyle = "#1f3a5f";
+  mvctx.lineWidth = 3.2;
+  mvctx.beginPath();
+  mvctx.moveTo(cx, cy);
+  mvctx.lineTo(x, y);
+  mvctx.stroke();
+
+  mvctx.setLineDash([6, 5]);
+  mvctx.strokeStyle = "#9aa7b2";
+  mvctx.beginPath();
+  mvctx.moveTo(x, cy);
+  mvctx.lineTo(x, y);
+  mvctx.moveTo(cx, y);
+  mvctx.lineTo(x, y);
+  mvctx.stroke();
+  mvctx.setLineDash([]);
+
+  mvctx.fillStyle = "#e67e22";
+  mvctx.beginPath();
+  mvctx.arc(x, cy, 8, 0, Math.PI * 2);
+  mvctx.fill();
+
+  mvctx.fillStyle = "#8e44ad";
+  mvctx.beginPath();
+  mvctx.arc(cx, y, 8, 0, Math.PI * 2);
+  mvctx.fill();
+
+  mvctx.fillStyle = "#1f3a5f";
+  mvctx.beginPath();
+  mvctx.arc(x, y, 10, 0, Math.PI * 2);
+  mvctx.fill();
+
+  mvctx.font = "bold 16px Arial";
+  mvctx.textAlign = "left";
+  mvctx.fillStyle = "#1f3a5f";
+  mvctx.fillText(`(${qx.toFixed(1)}°, ${qy.toFixed(1)}°)`, x + 12, y - 12);
+}
+
+function drawHistoryGraph() {
+  const W = historyCanvas.width;
+  const H = historyCanvas.height;
+
+  const padL = 92;
+  const padR = 28;
+  const padT = 30;
+  const padB = 48;
+
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+  const midY = padT + plotH / 2;
+  const maxDeg = 90;
+
+  hctx.clearRect(0, 0, W, H);
+  hctx.fillStyle = "#fbfcfd";
+  hctx.fillRect(0, 0, W, H);
+
+  hctx.strokeStyle = "#dbe3ea";
+  hctx.lineWidth = 1;
+  hctx.fillStyle = "#37474f";
+  hctx.font = "bold 22px Arial";
+  hctx.textAlign = "right";
+
+  for (let d = -90; d <= 90; d += 30) {
+    const y = midY - (d / maxDeg) * (plotH / 2);
+    hctx.beginPath();
+    hctx.moveTo(padL, y);
+    hctx.lineTo(W - padR, y);
+    hctx.stroke();
+    hctx.fillText(`${d}°`, padL - 10, y + 7);
+  }
+
+  hctx.strokeStyle = "#607d8b";
+  hctx.lineWidth = 1.8;
+  hctx.beginPath();
+  hctx.moveTo(padL, midY);
+  hctx.lineTo(W - padR, midY);
+  hctx.moveTo(padL, padT);
+  hctx.lineTo(padL, H - padB);
+  hctx.stroke();
+
+  hctx.fillStyle = "#1c2833";
+  hctx.font = "bold 24px Arial";
+  hctx.textAlign = "center";
+  hctx.fillText("時間 t (s)", padL + plotW / 2, H - 14);
+
+  hctx.save();
+  hctx.translate(30, padT + plotH / 2);
+  hctx.rotate(-Math.PI / 2);
+  hctx.fillText("角度 (度)", 0, 0);
+  hctx.restore();
+
+  function yMap(rad) {
+    return midY - (radToDeg(rad) / maxDeg) * (plotH / 2);
+  }
+
+  function drawLine(key, color) {
+    if (history.length < 2) return;
+
+    hctx.beginPath();
+
+    history.forEach((p, i) => {
+      const x = padL + (i / (historyMax - 1)) * plotW;
+      const y = yMap(p[key]);
+      if (i === 0) hctx.moveTo(x, y);
+      else hctx.lineTo(x, y);
+    });
+
+    hctx.strokeStyle = color;
+    hctx.lineWidth = 3.2;
+    hctx.stroke();
+  }
+
+  drawLine("theta1", "#e67e22");
+  drawLine("theta2", "#2f80ed");
+  drawLine("qPlus", "#27ae60");
+  drawLine("qMinus", "#8e44ad");
+}
+
+function drawEnergyGraph() {
+  const W = energyCanvas.width;
+  const H = energyCanvas.height;
+
+  const padL = 98;
+  const padR = 32;
+  const padT = 36;
+  const padB = 58;
+
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+
+  ectx.clearRect(0, 0, W, H);
+  ectx.fillStyle = "#fbfcfd";
+  ectx.fillRect(0, 0, W, H);
+
+  if (history.length < 2) {
+    ectx.fillStyle = "#263238";
+    ectx.font = "bold 20px Arial";
+    ectx.textAlign = "left";
+    ectx.fillText("等待能量資料...", padL + 20, padT + 42);
+    return;
+  }
+
+  const visible = history.slice(-historyMax);
+
+  let maxE = 0;
+  visible.forEach(p => {
+    maxE = Math.max(
+      maxE,
+      p.kinetic,
+      p.potential,
+      p.gravityPotential,
+      p.springPotential,
+      p.total
+    );
+  });
+
+  if (maxE <= 0) maxE = 1;
+  maxE *= 1.08;
+
+  const t0 = visible[0].t;
+  const t1 = visible[visible.length - 1].t;
+  const dt = Math.max(0.001, t1 - t0);
+
+  ectx.fillStyle = "#37474f";
+  ectx.font = "bold 18px Arial";
+  for (let i = 0; i <= 4; i++) {
+    const y = padT + plotH * i / 4;
+    const val = maxE * (1 - i / 4);
+
+    ectx.strokeStyle = "#dbe4ec";
+    ectx.lineWidth = 1.2;
+    ectx.beginPath();
+    ectx.moveTo(padL, y);
+    ectx.lineTo(padL + plotW, y);
+    ectx.stroke();
+
+    ectx.textAlign = "right";
+    ectx.fillText(val.toFixed(2), padL - 10, y + 6);
+  }
+
+  ectx.strokeStyle = "#78909c";
+  ectx.lineWidth = 1.8;
+  ectx.beginPath();
+  ectx.moveTo(padL, padT);
+  ectx.lineTo(padL, padT + plotH);
+  ectx.lineTo(padL + plotW, padT + plotH);
+  ectx.stroke();
+
+  function mapX(p) {
+    return padL + ((p.t - t0) / dt) * plotW;
+  }
+
+  function mapY(val) {
+    return padT + plotH - (val / maxE) * plotH;
+  }
+
+  function plot(key, color, width, dashed = false) {
+    ectx.save();
+    ectx.setLineDash(dashed ? [9, 7] : []);
+    ectx.beginPath();
+
+    visible.forEach((p, i) => {
+      const x = mapX(p);
+      const y = mapY(p[key]);
+      if (i === 0) ectx.moveTo(x, y);
+      else ectx.lineTo(x, y);
+    });
+
+    ectx.strokeStyle = color;
+    ectx.lineWidth = width;
+    ectx.stroke();
+    ectx.restore();
+  }
+
+  plot("kinetic", "#ef5350", 3.2, false);
+  plot("gravityPotential", "#66bb6a", 3.0, true);
+  plot("springPotential", "#ab47bc", 3.0, true);
+  plot("potential", "#42a5f5", 3.2, false);
+  plot("total", "#263238", 3.6, false);
+
+  ectx.fillStyle = "#1c2833";
+  ectx.font = "bold 24px Arial";
+  ectx.textAlign = "center";
+  ectx.fillText("時間 t (s)", padL + plotW / 2, H - 22);
+
+  ectx.save();
+  ectx.translate(28, padT + plotH / 2);
+  ectx.rotate(-Math.PI / 2);
+  ectx.fillText("能量 (J)", 0, 0);
+  ectx.restore();
+}
+
+function updateTable(state) {
+  theta1Cell.textContent = radToDeg(state.theta1).toFixed(1) + "°";
+  theta2Cell.textContent = radToDeg(state.theta2).toFixed(1) + "°";
+  qPlusCell.textContent = radToDeg(state.qPlus).toFixed(1) + "°";
+  qMinusCell.textContent = radToDeg(state.qMinus).toFixed(1) + "°";
+}
+
+function updateMainOutsideInfo(state) {
+  qPlusOutside.innerHTML = `q<sub>+</sub> = ${radToDeg(state.qPlus).toFixed(1)}°`;
+  qMinusOutside.innerHTML = `q<sub>-</sub> = ${radToDeg(state.qMinus).toFixed(1)}°`;
+  timeOutside.textContent = `時間 t = ${t.toFixed(1)} s`;
+  lengthOutside.textContent = `繩長 L = ${Math.round(pendulumLength * 100)} cm`;
+  massOutside.textContent = `m₁ = ${Math.round(m1 * 1000)} g, m₂ = ${Math.round(m2 * 1000)} g`;
+  dampingOutside.textContent = `阻尼 b = ${damping.toFixed(2)}`;
+  omegaOutside.innerHTML =
+    `ω<sub>+</sub> = ${state.wPlus.toFixed(2)}, ω<sub>-</sub> = ${state.wMinus.toFixed(2)} rad/s`;
+}
+
+function loop() {
+  const state = getState(t);
+  const energy = computeEnergy(t);
+
+  drawMain(state);
+  drawModalVector(state);
+  drawHistoryGraph();
+  drawEnergyGraph();
+  updateTable(state);
+  updateMainOutsideInfo(state);
+
+  if (running) {
+    history.push({
+      t,
+      theta1: state.theta1,
+      theta2: state.theta2,
+      qPlus: state.qPlus,
+      qMinus: state.qMinus,
+      kinetic: energy.kinetic,
+      gravityPotential: energy.gravityPotential,
+      springPotential: energy.springPotential,
+      potential: energy.potential,
+      total: energy.total
+    });
+
+    if (history.length > historyMax) history.shift();
+
+    t += 0.006 * speed;
+  }
+
+  requestAnimationFrame(loop);
+}
+
+setValuesFromSliders();
+loop();
+</script>
+</body>
+</html>

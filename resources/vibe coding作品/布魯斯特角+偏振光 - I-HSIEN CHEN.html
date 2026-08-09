@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>布魯斯特角與偏光鏡 (CPL) 互動展示</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        canvas {
+            background-color: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 280px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+        .cpl-group {
+            background: #fff3cd;
+            border-color: #ffe69c;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .info-panel {
+            padding: 15px;
+            background-color: #e8f8f5;
+            border-left: 4px solid #1abc9c;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .alert {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 15px;
+            text-align: center;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .brewster-active {
+            color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>布魯斯特角 & 相機偏光鏡模擬</h1>
+    
+    <div class="container">
+        <!-- 加寬畫布以容納兩個觀察窗 -->
+        <canvas id="simCanvas" width="800" height="580"></canvas>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="angleSlider">入射角 (θi): <span id="angleVal">56.5</span>°</label>
+                <input type="range" id="angleSlider" min="0" max="89" value="56.5" step="0.5">
+            </div>
+            
+            <div class="control-group">
+                <label for="n1Slider">介質 1 折射率: <span id="n1Val">1.00</span></label>
+                <input type="range" id="n1Slider" min="1" max="2.5" value="1.0" step="0.01">
+            </div>
+
+            <div class="control-group">
+                <label for="n2Slider">介質 2 折射率: <span id="n2Val">1.50</span></label>
+                <input type="range" id="n2Slider" min="1" max="2.5" value="1.5" step="0.01">
+            </div>
+
+            <!-- 新增偏光鏡角度滑桿 -->
+            <div class="control-group cpl-group">
+                <label for="cplSlider">📷 偏光鏡旋轉角度: <span id="cplVal">90</span>°</label>
+                <input type="range" id="cplSlider" min="0" max="90" value="90" step="1">
+                <small style="color:#666; margin-top:4px;">0°=允許水平光, 90°=允許垂直光</small>
+            </div>
+
+            <div class="info-panel">
+                <p style="margin-top:0;"><strong>計算結果：</strong></p>
+                <p>布魯斯特角: <span id="brewsterVal">56.3</span>°</p>
+                <p>反射角: <span id="refAngleVal">56.5</span>°</p>
+                <p>折射角: <span id="transAngleVal">33.7</span>°</p>
+            </div>
+
+            <div id="statusAlert" class="alert"></div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 主視圖中心點 (設定在左側區域)
+        const mainViewWidth = 500;
+        const cx = mainViewWidth / 2;
+        const cy = canvas.height / 2;
+
+        const angleSlider = document.getElementById('angleSlider');
+        const n1Slider = document.getElementById('n1Slider');
+        const n2Slider = document.getElementById('n2Slider');
+        const cplSlider = document.getElementById('cplSlider'); // 偏光鏡滑桿
+        
+        const angleVal = document.getElementById('angleVal');
+        const n1Val = document.getElementById('n1Val');
+        const n2Val = document.getElementById('n2Val');
+        const cplVal = document.getElementById('cplVal');
+        
+        const brewsterVal = document.getElementById('brewsterVal');
+        const refAngleVal = document.getElementById('refAngleVal');
+        const transAngleVal = document.getElementById('transAngleVal');
+        const statusAlert = document.getElementById('statusAlert');
+
+        function draw() {
+            let thetaI_deg = parseFloat(angleSlider.value);
+            let n1 = parseFloat(n1Slider.value);
+            let n2 = parseFloat(n2Slider.value);
+            let cpl_deg = parseFloat(cplSlider.value);
+
+            angleVal.textContent = thetaI_deg.toFixed(1);
+            n1Val.textContent = n1.toFixed(2);
+            n2Val.textContent = n2.toFixed(2);
+            cplVal.textContent = cpl_deg;
+
+            let thetaI_rad = thetaI_deg * Math.PI / 180;
+            let brewster_rad = Math.atan(n2 / n1);
+            let brewster_deg = brewster_rad * 180 / Math.PI;
+            brewsterVal.textContent = brewster_deg.toFixed(1);
+
+            let sinThetaT = (n1 / n2) * Math.sin(thetaI_rad);
+            let thetaT_rad = Math.asin(sinThetaT);
+            let thetaT_deg = isNaN(thetaT_rad) ? "全反射" : (thetaT_rad * 180 / Math.PI).toFixed(1);
+            
+            refAngleVal.textContent = thetaI_deg.toFixed(1);
+            transAngleVal.textContent = thetaT_deg;
+
+            let isBrewster = Math.abs(thetaI_deg - brewster_deg) <= 0.5;
+            if(isBrewster) {
+                thetaI_deg = brewster_deg;
+                thetaI_rad = brewster_deg * Math.PI / 180;
+            }
+
+            // 清空畫布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // ================= 繪製主視圖 (左側) =================
+            ctx.fillStyle = '#ffffff'; 
+            ctx.fillRect(0, 0, mainViewWidth, cy);
+            ctx.fillStyle = '#dcecfc'; 
+            ctx.fillRect(0, cy, mainViewWidth, canvas.height / 2);
+
+            // 繪製法線與介面
+            ctx.beginPath();
+            ctx.setLineDash([5, 5]);
+            ctx.moveTo(cx, 0); ctx.lineTo(cx, canvas.height);
+            ctx.strokeStyle = '#7f8c8d'; ctx.lineWidth = 1; ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.beginPath();
+            ctx.moveTo(0, cy); ctx.lineTo(mainViewWidth, cy);
+            ctx.strokeStyle = '#95a5a6'; ctx.lineWidth = 2; ctx.stroke();
+
+            const rayLen = 220;
+            let incX = cx - rayLen * Math.sin(thetaI_rad);
+            let incY = cy - rayLen * Math.cos(thetaI_rad);
+            drawRay(incX, incY, cx, cy, '#e74c3c', 2);
+            drawPolarization(incX, incY, cx, cy, true, true);
+
+            let refX = cx + rayLen * Math.sin(thetaI_rad);
+            let refY = cy - rayLen * Math.cos(thetaI_rad);
+            
+            if (isBrewster) {
+                drawRay(cx, cy, refX, refY, '#27ae60', 3);
+                drawPolarization(cx, cy, refX, refY, true, false); 
+                statusAlert.innerHTML = "✨ 達到布魯斯特角！<br>反射光呈現完全偏振";
+                statusAlert.className = "alert brewster-active";
+                angleSlider.value = brewster_deg;
+                if (!isNaN(thetaT_rad)) drawRightAngle(cx, cy, thetaI_rad, thetaT_rad);
+            } else {
+                drawRay(cx, cy, refX, refY, '#e67e22', 2);
+                drawPolarization(cx, cy, refX, refY, true, true); 
+                statusAlert.innerHTML = isNaN(thetaT_rad) ? "⚠️ 發生全內反射" : "";
+                statusAlert.className = "alert";
+            }
+
+            if (!isNaN(thetaT_rad)) {
+                let transX = cx + rayLen * Math.sin(thetaT_rad);
+                let transY = cy + rayLen * Math.cos(thetaT_rad);
+                drawRay(cx, cy, transX, transY, '#2980b9', 2);
+                drawPolarization(cx, cy, transX, transY, true, true);
+            }
+            
+            drawAngleIndicators(thetaI_rad, thetaI_rad, thetaT_rad, thetaI_deg, thetaT_deg);
+            
+            // ================= 繪製觀察窗 (右側) =================
+            const panelX = 520;
+            // 1. 迎面視角 (右上角)
+            drawCrossSectionView(n1, n2, thetaI_rad, thetaT_rad, panelX, 15);
+            // 2. 相機偏光鏡模擬窗 (右下角)
+            drawCameraSimulation(n1, n2, thetaI_rad, thetaT_rad, cpl_deg, panelX, 240);
+            
+            // 繪製分隔線
+            ctx.beginPath();
+            ctx.moveTo(mainViewWidth, 0); ctx.lineTo(mainViewWidth, canvas.height);
+            ctx.strokeStyle = '#bdc3c7'; ctx.lineWidth = 1; ctx.stroke();
+        }
+
+        // --- 迎面視角觀察窗 ---
+        function drawCrossSectionView(n1, n2, thetaI_rad, thetaT_rad, winX, winY) {
+            let cos_i = Math.cos(thetaI_rad);
+            let cos_t = Math.cos(thetaT_rad);
+            let ampS, ampP;
+
+            if (isNaN(thetaT_rad)) { 
+                ampS = 1; ampP = 1;
+            } else {
+                let rs = (n1 * cos_i - n2 * cos_t) / (n1 * cos_i + n2 * cos_t);
+                let rp = (n1 * cos_t - n2 * cos_i) / (n1 * cos_t + n2 * cos_i);
+                ampS = Math.abs(rs); ampP = Math.abs(rp);
+            }
+
+            const winW = 260, winH = 200;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.fillRect(winX, winY, winW, winH);
+            ctx.strokeRect(winX, winY, winW, winH);
+            
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = 'bold 14px "Segoe UI"'; ctx.textAlign = 'center';
+            ctx.fillText('1. 反射光截面視角 (迎面觀察)', winX + winW/2, winY + 25);
+
+            const ox = winX + winW/2, oy = winY + 110, maxR = 55;
+            let maxAmp = Math.max(ampS, ampP);
+            let drawRs = 0, drawRp = 0;
+            
+            if (maxAmp > 0) {
+                drawRs = maxR * (ampS / maxAmp); 
+                drawRp = maxR * (ampP / maxAmp);
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(ox - maxR - 15, oy); ctx.lineTo(ox + maxR + 15, oy);
+            ctx.moveTo(ox, oy - maxR - 15); ctx.lineTo(ox, oy + maxR + 15);
+            ctx.strokeStyle = '#ecf0f1'; ctx.stroke();
+
+            ctx.beginPath();
+            ctx.ellipse(ox, oy, drawRs, drawRp, 0, 0, 2 * Math.PI);
+            ctx.fillStyle = 'rgba(46, 204, 113, 0.15)'; ctx.fill();
+            ctx.strokeStyle = '#27ae60'; ctx.lineWidth = 2; ctx.stroke();
+            
+            if (drawRs > 1) drawDoubleArrow(ox - drawRs, oy, ox + drawRs, oy, '#000', 2.5);
+            if (drawRp > 1) drawDoubleArrow(ox, oy - drawRp, ox, oy + drawRp, '#2c3e50', 2.5);
+        }
+
+        // --- 新增：相機偏光鏡(CPL)模擬窗 ---
+        function drawCameraSimulation(n1, n2, thetaI_rad, thetaT_rad, cpl_deg, winX, winY) {
+            const winW = 260, winH = 320;
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(winX, winY, winW, winH);
+            ctx.strokeRect(winX, winY, winW, winH);
+            
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = 'bold 14px "Segoe UI"'; ctx.textAlign = 'center';
+            ctx.fillText('2. 透過相機與偏光鏡拍攝窗戶', winX + winW/2, winY + 25);
+
+            // 計算反射光的強度 (Intensity = amplitude^2)
+            let cos_i = Math.cos(thetaI_rad);
+            let cos_t = Math.cos(thetaT_rad);
+            let Is = 0, Ip = 0;
+
+            if (isNaN(thetaT_rad)) {
+                Is = 1; Ip = 1;
+            } else {
+                let rs = (n1 * cos_i - n2 * cos_t) / (n1 * cos_i + n2 * cos_t);
+                let rp = (n1 * cos_t - n2 * cos_i) / (n1 * cos_t + n2 * cos_i);
+                Is = rs * rs;
+                Ip = rp * rp;
+            }
+
+            // 馬呂斯定律：偏光鏡過濾後的強度
+            let cpl_rad = cpl_deg * Math.PI / 180;
+            // 0度允許水平(s-偏振)通過，90度允許垂直(p-偏振)通過
+            let passedIntensity = Is * Math.pow(Math.cos(cpl_rad), 2) + Ip * Math.pow(Math.sin(cpl_rad), 2);
+
+            // 繪製窗戶外牆 (磚牆色)
+            const imgX = winX + 15, imgY = winY + 45, imgW = 230, imgH = 260;
+            ctx.fillStyle = '#cb4335'; // 磚紅色
+            ctx.fillRect(imgX, imgY, imgW, imgH);
+            
+            // 繪製窗框
+            const frameW = 140, frameH = 200;
+            const frameX = imgX + (imgW - frameW)/2;
+            const frameY = imgY + (imgH - frameH)/2 + 10;
+            ctx.fillStyle = '#fdfefe';
+            ctx.fillRect(frameX, frameY, frameW, frameH);
+            
+            // 繪製屋內景色 (暗色代表室內，畫個簡單的室內盆栽剪影)
+            ctx.fillStyle = '#17202a';
+            ctx.fillRect(frameX + 8, frameY + 8, frameW - 16, frameH - 16);
+            ctx.fillStyle = '#27ae60'; // 盆栽
+            ctx.beginPath();
+            ctx.arc(frameX + 40, frameY + 160, 20, 0, Math.PI, true);
+            ctx.fill();
+            ctx.fillRect(frameX + 35, frameY + 160, 10, 25);
+            ctx.fillStyle = '#8e44ad'; // 室內掛畫
+            ctx.fillRect(frameX + 80, frameY + 40, 30, 40);
+
+            // 繪製玻璃反光 (Glare)
+            // 將過濾後的強度轉換為不透明度，為了視覺效果稍微放大倍率
+            let glareOpacity = Math.min(1.0, passedIntensity * 15); 
+            ctx.globalAlpha = glareOpacity;
+            
+            // 反光景色：藍天與白雲的漸層
+            let glareGrad = ctx.createLinearGradient(frameX, frameY, frameX+frameW, frameY+frameH);
+            glareGrad.addColorStop(0, '#85c1e9');
+            glareGrad.addColorStop(1, '#ebf5fb');
+            ctx.fillStyle = glareGrad;
+            ctx.fillRect(frameX + 8, frameY + 8, frameW - 16, frameH - 16);
+            ctx.globalAlpha = 1.0; // 恢復透明度
+
+            // 在左上角畫一個指示偏光鏡旋轉角度的小圖示
+            drawCPLIndicator(imgX + 30, imgY + 30, cpl_rad);
+        }
+
+        // 繪製偏光鏡指示圖示
+        function drawCPLIndicator(x, y, angle_rad) {
+            ctx.beginPath();
+            ctx.arc(x, y, 20, 0, Math.PI*2);
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#f1c40f';
+            ctx.stroke();
+
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle_rad);
+            // 畫出允許通過的光柵縫隙方向
+            ctx.beginPath();
+            for(let i=-10; i<=10; i+=5) {
+                ctx.moveTo(-15, i);
+                ctx.lineTo(15, i);
+            }
+            ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // 輔助繪圖函數
+        function drawDoubleArrow(x1, y1, x2, y2, color, width) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+            ctx.strokeStyle = color; ctx.lineWidth = width; ctx.stroke();
+            
+            let angle = Math.atan2(y2 - y1, x2 - x1);
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - 6*Math.cos(angle - Math.PI/6), y2 - 6*Math.sin(angle - Math.PI/6));
+            ctx.lineTo(x2 - 6*Math.cos(angle + Math.PI/6), y2 - 6*Math.sin(angle + Math.PI/6));
+            ctx.fillStyle = color; ctx.fill();
+            
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x1 + 6*Math.cos(angle - Math.PI/6), y1 + 6*Math.sin(angle - Math.PI/6));
+            ctx.lineTo(x1 + 6*Math.cos(angle + Math.PI/6), y1 + 6*Math.sin(angle + Math.PI/6));
+            ctx.fill();
+        }
+
+        function drawRay(x1, y1, x2, y2, color, width) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+            ctx.strokeStyle = color; ctx.lineWidth = width; ctx.stroke();
+            
+            let angle = Math.atan2(y2 - y1, x2 - x1);
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - 12 * Math.cos(angle - Math.PI/7), y2 - 12 * Math.sin(angle - Math.PI/7));
+            ctx.lineTo(x2 - 12 * Math.cos(angle + Math.PI/7), y2 - 12 * Math.sin(angle + Math.PI/7));
+            ctx.fillStyle = color; ctx.fill();
+        }
+
+        function drawPolarization(x1, y1, x2, y2, showDots, showArrows) {
+            const dx = x2 - x1, dy = y2 - y1;
+            const len = Math.sqrt(dx*dx + dy*dy);
+            const numPoints = 6, step = len / numPoints;
+            const ux = dx / len, uy = dy / len;
+            const px = -uy, py = ux;
+            
+            for(let i = 1; i < numPoints; i++) {
+                const px_i = x1 + ux * (i * step);
+                const py_i = y1 + uy * (i * step);
+                
+                if (showArrows) {
+                    const arrLen = 12;
+                    ctx.beginPath();
+                    ctx.moveTo(px_i - px * arrLen, py_i - py * arrLen);
+                    ctx.lineTo(px_i + px * arrLen, py_i + py * arrLen);
+                    ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 1.5; ctx.stroke();
+                    
+                    drawTinyArrow(px_i + px * arrLen, py_i + py * arrLen, Math.atan2(py, px));
+                    drawTinyArrow(px_i - px * arrLen, py_i - py * arrLen, Math.atan2(-py, -px));
+                }
+                
+                if (showDots) {
+                    ctx.beginPath();
+                    ctx.arc(px_i, py_i, 4, 0, Math.PI*2);
+                    ctx.fillStyle = '#000'; ctx.fill();
+                }
+            }
+        }
+
+        function drawTinyArrow(x, y, angle) {
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - 5*Math.cos(angle - Math.PI/5), y - 5*Math.sin(angle - Math.PI/5));
+            ctx.lineTo(x - 5*Math.cos(angle + Math.PI/5), y - 5*Math.sin(angle + Math.PI/5));
+            ctx.fillStyle = '#2c3e50'; ctx.fill();
+        }
+
+        function drawAngleIndicators(incRad, refRad, transRad, incDeg, transDeg) {
+            const arcR = 40;
+            ctx.font = '16px "Segoe UI", Arial'; ctx.fillStyle = '#333'; ctx.textAlign = 'center';
+
+            ctx.beginPath(); ctx.arc(cx, cy, arcR, 1.5*Math.PI - incRad, 1.5*Math.PI);
+            ctx.strokeStyle = '#7f8c8d'; ctx.stroke();
+            ctx.fillText(incDeg.toFixed(1) + '°', cx - (arcR + 25) * Math.sin(incRad / 2), cy - (arcR + 25) * Math.cos(incRad / 2));
+
+            ctx.beginPath(); ctx.arc(cx, cy, arcR, 1.5*Math.PI, 1.5*Math.PI + refRad); ctx.stroke();
+            ctx.fillText(incDeg.toFixed(1) + '°', cx + (arcR + 25) * Math.sin(refRad / 2), cy - (arcR + 25) * Math.cos(refRad / 2));
+
+            if (!isNaN(transRad)) {
+                ctx.beginPath(); ctx.arc(cx, cy, arcR, 0.5*Math.PI - transRad, 0.5*Math.PI); ctx.stroke();
+                ctx.fillText(transDeg + '°', cx + (arcR + 25) * Math.sin(transRad / 2), cy + (arcR + 25) * Math.cos(transRad / 2));
+            }
+        }
+
+        function drawRightAngle(cx, cy, thetaI_rad, thetaT_rad) {
+            const size = 20;
+            const angleRef = -Math.PI/2 + thetaI_rad; 
+            const angleTrans = Math.PI/2 - thetaT_rad;
+            
+            ctx.beginPath();
+            ctx.moveTo(cx + size * Math.cos(angleRef), cy + size * Math.sin(angleRef));
+            ctx.lineTo(cx + size * Math.cos(angleRef) + size * Math.cos(angleTrans), 
+                       cy + size * Math.sin(angleRef) + size * Math.sin(angleTrans));
+            ctx.lineTo(cx + size * Math.cos(angleTrans), cy + size * Math.sin(angleTrans));
+            ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 2; ctx.stroke();
+        }
+
+        // 綁定事件
+        angleSlider.addEventListener('input', draw);
+        n1Slider.addEventListener('input', draw);
+        n2Slider.addEventListener('input', draw);
+        cplSlider.addEventListener('input', draw);
+
+        // 初始繪製
+        draw();
+    </script>
+</body>
+</html>
+
+

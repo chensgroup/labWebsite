@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>師大物理教育團隊</title>
+  <title>師大物理教育團隊 - 資源</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -14,11 +14,11 @@
       <a href="member.html">成員</a>
       <a href="research.html">研究</a>
       <a href="course.html">課程</a>
-      <a href="resource.html">資源</a>
+      <a class="active" href="resource.html">資源</a>
       <a href="event.html">活動</a>
       <a class="forYt" href="https://youtube.com/channel/UCCkcgVCncWmGhfgu9elQgjQ?si=ZbwjryW_BgaaabVk"
         target="_blank">YouTube</a>
-      <a class="lang-option" href="index_en.html">English</a>
+      <a class="lang-option" href="resource_en.html">English</a>
     </nav>
   </header>
   <main>
@@ -32,27 +32,27 @@
       <div class="person-card dropdown-container" tabindex="0" data-name="力學一"
         data-options="量測 直線運動 平面運動 牛頓運動定律 週期性運動 萬有引力">
         <button class="course-button"><strong>力學一</strong></button>
-        <div class="dropdown-content" id="dropdownList"></div>
+        <div class="dropdown-content"></div>
       </div>
       <div class="person-card dropdown-container" tabindex="0" data-name="力學二、熱學"
         data-options="力平衡與力矩 質心與動量 功與能量 碰撞 熱學">
         <button class="course-button"><strong>力學二、熱學</strong></button>
-        <div class="dropdown-content" id="dropdownList"></div>
+        <div class="dropdown-content"></div>
       </div>
       <div class="person-card dropdown-container" tabindex="0" data-name="波動、光及聲音"
         data-options="波的性質、疊加原理 駐波、惠更斯定理 聲波的傳播、共鳴 幾何光學(反射、折射、透鏡) 物理光學(波動說、干涉、繞射)">
         <button class="course-button"><strong>波動、光及聲音</strong></button>
-        <div class="dropdown-content" id="dropdownList"></div>
+        <div class="dropdown-content"></div>
       </div>
       <div class="person-card dropdown-container" tabindex="0" data-name="電磁現象一"
         data-options="靜電學(庫倫定律) 電場、電位能、電位及電位差 電流磁效應、導線在磁場中受力 帶電質點在磁場中的運動、勞侖茲力 電磁感應、冷次定律">
         <button class="course-button"><strong>電磁現象一</strong></button>
-        <div class="dropdown-content" id="dropdownList"></div>
+        <div class="dropdown-content"></div>
       </div>
       <div class="person-card dropdown-container" tabindex="0" data-name="電磁現象二、量子現象"
         data-options="電流、電阻與歐姆定律 量子論：黑體輻射、光電效應 原子結構與原子核 氫原子光譜與能階、物質波">
         <button class="course-button"><strong>電磁現象二、量子現象</strong></button>
-        <div class="dropdown-content" id="dropdownList"></div>
+        <div class="dropdown-content"></div>
       </div>
     </div>
     <h2>其他資源</h2>
@@ -61,6 +61,11 @@
         target="_blank"><strong>板書撰寫教學</strong></a>
       <a class="course-button" href="https://www.youtube.com/watch?v=dlJQX9mbobo"
         target="_blank"><strong>探究式教學</strong></a>
+      <a class="course-button resource-modal-btn" href="javascript:void(0);" data-title="簡諧運動" data-url="resources/vibe coding作品/SHM_lab_v3.html"><strong>簡諧運動</strong></a>
+      <a class="course-button resource-modal-btn" href="javascript:void(0);" data-title="安培右手定則" data-url="resources/vibe coding作品/右手定則_定稿版.html"><strong>安培右手定則</strong></a>
+      <a class="course-button resource-modal-btn" href="javascript:void(0);" data-title="布魯斯特角與偏振光" data-url="resources/vibe coding作品/布魯斯特角+偏振光 - I-HSIEN CHEN.html"><strong>布魯斯特角與偏振光</strong></a>
+      <a class="course-button resource-modal-btn" href="javascript:void(0);" data-title="耦合擺" data-url="resources/vibe coding作品/復合擺.html"><strong>耦合擺</strong></a>
+      <a class="course-button resource-modal-btn" href="javascript:void(0);" data-title="斜拋運動砲台命中挑戰" data-url="resources/vibe coding作品/斜拋運動砲台命中挑戰_0622.html"><strong>斜拋運動砲台命中挑戰</strong></a>
     </div>
   </main>
   <div class="modal" id="profile-modal" aria-hidden="true" role="dialog" aria-modal="true">
@@ -68,7 +73,6 @@
       <div class="modal__topbar" style="display:none;">
         <div class="name" id="m-name-mobile"></div>
         <button class="modal__close" aria-label="關閉">&times;</button>
-        <div class="dropdown-content" id="dropdownList"></div>
       </div>
       <button class="modal__close" aria-label="關閉" title="關閉">&times;</button>
       <div class="modal__body">
