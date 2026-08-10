@@ -1,15 +1,4 @@
 (() => {
-  const modal = document.getElementById('profile-modal');
-  if (!modal) return;
-
-  const panel = modal.querySelector('.modal__panel');
-  const closeBtns = modal.querySelectorAll('.modal__close');
-  const topbar = modal.querySelector('.modal__topbar');
-  const nameEl = document.getElementById('m-name');
-  const nameMobileEl = document.getElementById('m-name-mobile');
-  const infoEl = document.getElementById('m-info');
-  const bodyEl = modal.querySelector('.modal__body');
-
   const COURSE_DATA = {
     'zh': {
       '物理教材教法': [
@@ -73,32 +62,16 @@
     }
   };
 
-  let _scrollY = 0;
-  function lockBodyScroll() {
-    _scrollY = window.scrollY || document.documentElement.scrollTop || 0;
-    document.documentElement.style.scrollBehavior = 'auto';
-    document.body.style.setProperty('--scroll-lock', `-${_scrollY}px`);
-    document.body.classList.add('no-scroll');
-  }
-  function unlockBodyScroll() {
-    document.body.classList.remove('no-scroll');
-    document.body.style.removeProperty('--scroll-lock');
-    window.scrollTo(0, _scrollY);
-    document.documentElement.style.scrollBehavior = '';
-  }
-
-  function openModal(name) {
-    nameEl.textContent = name;
-    if (nameMobileEl) nameMobileEl.textContent = name;
-
+  function openCourseModal(name) {
     const lang = document.documentElement.lang === 'en' ? 'en' : 'zh';
     const links = COURSE_DATA[lang] && COURSE_DATA[lang][name];
+    let infoHtml = '';
 
     if (links && links.length > 0) {
-      infoEl.innerHTML = '<ul style="list-style: none; padding: 0; margin: 1.5rem 0; text-align: left;">' +
+      infoHtml = '<ul style="list-style: none; padding: 0; margin: 1.5rem 0; text-align: left;">' +
         links.map(link => `
           <li style="margin: 1rem 0; font-size: 16px; line-height: 1.5;">
-            <a href="${link.url}" target="_blank" style="color: var(--primary-color, #007bff); text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+            <a href="${link.url}" target="_blank" rel="noopener" style="color: var(--blue, #007bff); text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
               🎬 ${link.title}
             </a>
           </li>
@@ -108,51 +81,28 @@
       const placeholderText = lang === 'en'
         ? 'Course details coming soon!'
         : '課程詳細資訊規劃中，敬請期待！';
-      infoEl.innerHTML = `<p style="text-align: center; margin: 2rem 0; font-size: 16px;">${placeholderText}</p>`;
+      infoHtml = `<p style="text-align: center; margin: 2rem 0; font-size: 16px;">${placeholderText}</p>`;
     }
 
-    if (window.matchMedia('(max-width: 720px)').matches) {
-      if (topbar) topbar.style.display = 'flex';
-    } else {
-      if (topbar) topbar.style.display = 'none';
+    if (window.SiteModal) {
+      window.SiteModal.open({
+        name: name,
+        infoHtml: infoHtml
+      });
     }
-
-    modal.style.display = 'block';
-    modal.setAttribute('aria-hidden', 'false');
-    lockBodyScroll();
-
-    if (bodyEl) bodyEl.scrollTop = 0;
-
-    document.addEventListener('keydown', escToClose);
   }
-
-  function closeModal() {
-    modal.style.display = 'none';
-    modal.setAttribute('aria-hidden', 'true');
-    unlockBodyScroll();
-    document.removeEventListener('keydown', escToClose);
-  }
-  function escToClose(e) { if (e.key === 'Escape') closeModal(); }
-
-  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-  panel.addEventListener('click', e => e.stopPropagation());
-  closeBtns.forEach(btn => btn.addEventListener('click', closeModal));
-
-  modal.addEventListener('touchmove', (e) => {
-    if (!e.target.closest('.modal__panel')) e.preventDefault();
-  }, { passive: false });
 
   const clickableCards = document.querySelectorAll('.person-card');
   clickableCards.forEach(card => {
     const name = card.dataset.name || card.querySelector('strong')?.textContent || '';
     card.addEventListener('click', e => {
       e.preventDefault();
-      openModal(name);
+      openCourseModal(name);
     });
     card.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        openModal(name);
+        openCourseModal(name);
       }
     });
   });

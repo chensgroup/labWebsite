@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>師大物理教育團隊 - 實驗模擬</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚛️</text></svg>">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>師大物理教育團隊</h1>
+    <nav class="menu-zh">
+      <a href="index.html">首頁</a>
+      <a class="active" href="simulation.html">實驗模擬</a>
+      <a href="member.html">成員</a>
+      <a href="research.html">研究</a>
+      <a href="course.html">課程</a>
+      <a href="resource.html">資源</a>
+      <a href="event.html">活動</a>
+      <a class="forYt" href="https://youtube.com/channel/UCCkcgVCncWmGhfgu9elQgjQ?si=ZbwjryW_BgaaabVk"
+        target="_blank">YouTube</a>
+      <a class="lang-option" href="simulation_en.html">English</a>
+    </nav>
+  </header>
+  <main>
+    <h2>物理互動實驗模擬<span style="font-size: 14px; vertical-align: middle;"><br>點擊按鈕以檢視與操作互動實驗</span></h2>
+    <div class="photo-grid">
+      <a class="course-button simulation-card" href="javascript:void(0);" data-title="簡諧運動" data-url="resources/vibe coding作品/SHM_lab_v3.html"><strong>簡諧運動</strong></a>
+      <a class="course-button simulation-card" href="javascript:void(0);" data-title="安培右手定則" data-url="resources/vibe coding作品/右手定則_定稿版.html"><strong>安培右手定則</strong></a>
+      <a class="course-button simulation-card" href="javascript:void(0);" data-title="布魯斯特角與偏振光" data-url="resources/vibe coding作品/布魯斯特角+偏振光 - I-HSIEN CHEN.html"><strong>布魯斯特角與偏振光</strong></a>
+      <a class="course-button simulation-card" href="javascript:void(0);" data-title="耦合擺" data-url="resources/vibe coding作品/復合擺.html"><strong>耦合擺</strong></a>
+      <a class="course-button simulation-card" href="javascript:void(0);" data-title="斜拋運動砲台命中挑戰" data-url="resources/vibe coding作品/斜拋運動砲台命中挑戰_0622.html"><strong>斜拋運動砲台命中挑戰</strong></a>
+    </div>
+  </main>
+  <div class="modal" id="profile-modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal__panel">
+      <div class="modal__topbar" style="display:none;">
+        <div class="name" id="m-name-mobile"></div>
+        <button class="modal__close" aria-label="關閉">&times;</button>
+      </div>
+      <button class="modal__close" aria-label="關閉" title="關閉">&times;</button>
+      <div class="modal__photo" style="display:none;"><img id="m-photo" src="" alt=""></div>
+      <div class="modal__body">
+        <h2 id="m-name"></h2>
+        <div class="modal__info" id="m-info"></div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <p>© 2026 師大物理教育團隊<br>聯絡我們：ntnuphyedu0101@gmail.com</p>
+  </footer>
+  <script src="modal.js"></script>
+  <script src="simulation.js"></script>
+</body>
+</html>

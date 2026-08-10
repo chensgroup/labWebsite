@@ -543,3 +543,100 @@ footer{
   background-color:#fff;
   transform:scale(1.2);
 }
+
+/* Fullscreen and Large Modal Overrides */
+.modal__panel.modal__panel--large{
+  display:flex !important;
+  flex-direction:column !important;
+  width:min(1350px,96vw) !important;
+  max-height:94vh !important;
+  margin:3vh auto !important;
+}
+
+.modal__panel.modal__panel--large .modal__body{
+  width:100% !important;
+  max-width:100% !important;
+}
+
+.modal__panel.modal__panel--fullscreen{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100vh !important;
+  max-width:100vw !important;
+  max-height:100vh !important;
+  margin:0 !important;
+  border-radius:0 !important;
+  padding:1rem 1.25rem !important;
+  z-index:1010 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  overflow:hidden !important;
+}
+
+.modal__panel.modal__panel--fullscreen .modal__body{
+  width:100% !important;
+  max-width:100% !important;
+  max-height:100% !important;
+  height:100% !important;
+  overflow:hidden !important;
+  display:flex !important;
+  flex-direction:column !important;
+  padding:0 !important;
+  margin:0 !important;
+  flex:1 !important;
+}
+
+.modal__panel.modal__panel--fullscreen .modal__body h2{
+  margin:0 0 .4rem 0 !important;
+  flex-shrink:0 !important;
+}
+
+.modal__panel.modal__panel--fullscreen #m-info{
+  width:100% !important;
+  max-width:100% !important;
+  flex:1 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  height:100% !important;
+  overflow:hidden !important;
+  margin:0 !important;
+}
+
+.modal__panel.modal__panel--fullscreen #m-info > div:first-child{
+  flex-shrink:0 !important;
+}
+
+.modal__panel.modal__panel--fullscreen iframe{
+  width:100% !important;
+  flex:1 !important;
+  height:100% !important;
+  min-height:0 !important;
+  max-height:100% !important;
+  border:1px solid #ddd !important;
+  border-radius:8px !important;
+}
+
+.modal__fullscreen-btn{
+  appearance:none;
+  background:rgba(0,123,255,0.08);
+  color:var(--blue, #007bff);
+  border:1.5px solid var(--blue, #007bff);
+  border-radius:8px;
+  padding:6px 14px;
+  cursor:pointer;
+  font-size:14px;
+  font-weight:600;
+  transition:all .25s ease;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+
+.modal__fullscreen-btn:hover{
+  background:linear-gradient(120deg,var(--blue),#6f3381);
+  color:#fff;
+  border-color:transparent;
+  box-shadow:0 4px 12px rgba(0,123,255,0.25);
+  transform:translateY(-1px);
+}
