@@ -1,0 +1,155 @@
+{
+  "activeCourses": [
+    {
+      "name_zh": "物理教材教法",
+      "name_en": "Physics Pedagogy",
+      "episodes": [
+        {
+          "title_zh": "科學教育的意義及重要性&對應課綱學習表現",
+          "title_en": "The Significance and Importance of Science Education & Alignment with Curriculum Learning Performance",
+          "url": "https://youtu.be/tkMNUhW7gTQ?si=F3JniEVQ0jXTP9na"
+        },
+        {
+          "title_zh": "力學&動力學 運動獨立性的探討(上)",
+          "title_en": "Mechanics & Dynamics: Exploration of Independence of Motion (Part 1)",
+          "url": "https://youtu.be/8CQyVP_1K5s?si=1z-MIEefVz8w5bHO"
+        },
+        {
+          "title_zh": "運動獨立性(中)、向量在物理學上的必要性(上)、摩擦力的性質探討(上)",
+          "title_en": "Independence of Motion (Part 2), The Necessity of Vectors in Physics (Part 1), Nature of Friction (Part 1)",
+          "url": "https://youtu.be/dX2EO6d_ibo?si=78c8TXhh7QXyFIn7"
+        },
+        {
+          "title_zh": "運動獨立性(下)、向量在物理學上的必要性(下)、摩擦力的性質探討(下)及課程設計",
+          "title_en": "Independence of Motion (Part 3), The Necessity of Vectors in Physics (Part 2), Nature of Friction (Part 2) & Curriculum Design",
+          "url": "https://youtu.be/bdyLPfTn_GU?si=QBL5VeOQR-8k1F0k"
+        },
+        {
+          "title_zh": "等效原理、科氏力及光的三原色探究",
+          "title_en": "Equivalence Principle, Coriolis Force, and Inquiry into the Three Primary Colors of Light",
+          "url": "https://youtu.be/IS1RdeSqqdY?si=Xy0fWjq3O9OsP-rA"
+        },
+        {
+          "title_zh": "暗物質的發現、在外太空如何轉身？活動探究、熱平衡問題",
+          "title_en": "Discovery of Dark Matter, How to Turn Around in Outer Space? Activity Inquiry, Thermal Equilibrium Problems",
+          "url": "https://youtu.be/iJRnQ1j1ShE?si=l-j2a0vxtusW8U4s"
+        },
+        {
+          "title_zh": "探究式教學演練─以暗物質為例；做功、動能、教學順序；位能的定義及意義(上)",
+          "title_en": "Inquiry-based Teaching Practice: Dark Matter Example; Work, Kinetic Energy, Teaching Sequence; Definition & Significance of Potential Energy (Part 1)",
+          "url": "https://youtu.be/28dZRVf70cw?si=rSzclWKUFWFt8leT"
+        },
+        {
+          "title_zh": "力學能守恆的概念、探究式教學技巧討論；簡諧運動單元的存在意義、可以如何教(引言)",
+          "title_en": "Concept of Mechanical Energy Conservation, Discussion on Inquiry-based Teaching Techniques; Significance of Simple Harmonic Motion Unit and How to Teach It (Introduction)",
+          "url": "https://youtu.be/OSnnvrukei4?si=xpFNm5Spzqc2l8Yy"
+        },
+        {
+          "title_zh": "簡諧運動的課程與實驗設計；光的漫射實驗、生活應用",
+          "title_en": "Curriculum and Experimental Design for Simple Harmonic Motion; Light Diffusion Experiment and Everyday Applications",
+          "url": "https://youtu.be/rbfJ0lF3O5k?si=jgLpbntjWoT5SxUm"
+        },
+        {
+          "title_zh": "探究式教學法步驟簡介、科學核心素養簡介及討論─以大考題目為例",
+          "title_en": "Introduction to Steps of Inquiry-based Teaching Method, Introduction & Discussion on Core Scientific Competencies: Exam Question Examples",
+          "url": "https://youtu.be/0K70SSHD_D0?si=RfgO3VMpD_hJiHdL"
+        },
+        {
+          "title_zh": "光的反射、折射、繞射 我們常忽略的教學內容",
+          "title_en": "Reflection, Refraction, and Diffraction of Light: Teaching Content We Often Overlook",
+          "url": "https://youtu.be/gY61E5uqK8o?si=GPmjB8CXiw0PfzNt"
+        },
+        {
+          "title_zh": "馬克士威方程組 國中就教過？原子結構、黑體輻射、氫原子光譜",
+          "title_en": "Maxwell's Equations Taught in Middle School? Atomic Structure, Blackbody Radiation, Hydrogen Atom Spectrum",
+          "url": "https://youtu.be/f6x3fk98s5c?si=U4-Ub8XX5iDv6h7Z"
+        }
+      ]
+    },
+    {
+      "name_zh": "物理教學實習",
+      "name_en": "Physics Teaching Practicum",
+      "episodes": []
+    },
+    {
+      "name_zh": "自然領域探究與實作",
+      "name_en": "Inquiry and Practice in Natural Sciences",
+      "episodes": [
+        {
+          "title_zh": "課程概述與進行方式、徵才廣告閱讀與啟發、額外分享",
+          "title_en": "Course Overview and Methodology, Job Advertisement Reading and Insights, Extra Sharing",
+          "url": "https://youtu.be/AVuyRHsPCKE?si=WgBwTQA7tClSpBkt"
+        },
+        {
+          "title_zh": "兩點之間移動之變量探討、蒙地卡羅及布豐投針求圓周率實驗",
+          "title_en": "Variable Exploration of Movement Between Two Points, Monte Carlo & Buffon's Needle Experiments for Pi",
+          "url": "https://youtu.be/5ydxjwpUrYM?si=0kjiXeTCD5vdN6nm"
+        },
+        {
+          "title_zh": "蒙地卡羅求圓周率探究實作收尾、費米問題─求臺北市男大學生擁有自小客車的人數",
+          "title_en": "Wrap-up of Monte Carlo Pi Experiment, Fermi Problem: Estimation of Car Ownership Among Male University Students in Taipei",
+          "url": "https://youtu.be/76RJByPk0Jo?si=XNB0xktwb9xSjMxm"
+        },
+        {
+          "title_zh": "透過雜誌照片推測爆炸能量、因次分析法步驟教學與練習、三原色光譜量測實驗",
+          "title_en": "Estimating Explosion Energy from Magazine Photos, Dimensional Analysis Steps and Practice, Three Primary Colors Spectrum Measurement Experiment",
+          "url": "https://youtu.be/0OTPfdsTnfM?si=xZyEB-VhZGB0DXql"
+        },
+        {
+          "title_zh": "科學是真理還是信仰？IMR&D 論文架構及撰寫技巧討論",
+          "title_en": "Is Science Truth or Belief? Discussion on IMRAD Paper Structure and Writing Techniques",
+          "url": "https://youtu.be/qbls4lJxim4?si=Hum6SzzBDNdhZ9ue"
+        },
+        {
+          "title_zh": "碎形(Fractal)篇第一章：碎形概述及維度計算方式探討、無人機的飛行原理討論",
+          "title_en": "Fractal Chapter 1: Introduction to Fractals & Dimension Calculation, Discussion on Drone Flight Principles",
+          "url": "https://youtu.be/l-TSkdtpmdY?si=0AM0lRNKTNKFeC42"
+        },
+        {
+          "title_zh": "碎形(Fractal)篇第二章：碎形實驗完整教學：操作流程、成品維度與運用AI估測",
+          "title_en": "Fractal Chapter 2: Complete Tutorial on Fractal Experiment: Procedure, Dimension of Outcomes, and AI-assisted Estimation",
+          "url": "https://youtu.be/WnvlWVIdsUQ?si=MhNMqaZQIVI28LJI"
+        },
+        {
+          "title_zh": "碎形(Fractal)篇第三章：碎形實驗、活塞點火器原理討論",
+          "title_en": "Fractal Chapter 3: Fractal Experiment & Discussion on Piston Fire Starter Principles",
+          "url": "https://youtu.be/-dx_iBLXC-I?si=_gtTPclfqC_IHhdM"
+        },
+        {
+          "title_zh": "碎形(Fractal)篇最終章：碎形的生活應用、天文望遠鏡與微波爐的特徵波長探討、三根蠟燭誰最快熄滅？",
+          "title_en": "Fractal Final Chapter: Everyday Applications of Fractals, Characteristic Wavelengths in Telescopes and Microwaves, Which of Three Candles Extinguishes First?",
+          "url": "https://youtu.be/P1r3B-mM1JU?si=rSIkHL6xykdITT3O"
+        },
+        {
+          "title_zh": "音階是人類直覺 or 自然定律？聲譜測量實驗及消失的基頻（missing fundamental）現象",
+          "title_en": "Is Musical Scale Human Intuition or Natural Law? Sound Spectrum Experiment and the Missing Fundamental Phenomenon",
+          "url": "https://youtu.be/Hech-uQg3Gw?si=cMHMiTllzW3VwKWX"
+        },
+        {
+          "title_zh": "哆啦a夢的放大燈管用嗎？紙蜻蜓實驗實作&平方立方律及動物飛行與否的規律",
+          "title_en": "Is Doraemon's Magnifying Ray Realistic? Paper Dragonfly Experiment, Square-Cube Law, and Patterns of Animal Flight",
+          "url": "https://youtu.be/4FMf-c8xIJg?si=aRCKqYsmPTNzGvuW"
+        },
+        {
+          "title_zh": "科學是一個整體嗎？談數據分析 & 原住民族音樂中的物理─藏在風笛中的物理",
+          "title_en": "Is Science a Unified Whole? Data Analysis & Physics in Indigenous Music: Physics Hidden in Bagpipes",
+          "url": "https://youtu.be/B9-KHHFbC1g?si=kVn7epCBbCe1RMSS"
+        }
+      ]
+    },
+    {
+      "name_zh": "自然科學領域概論（小教）",
+      "name_en": "Introduction to Natural Sciences (Elementary)",
+      "episodes": []
+    }
+  ],
+  "pastCourses": [],
+  "handouts": [
+    {
+      "title_zh": "IMRD 是學術論文的基本架構（PDF）",
+      "title_en": "IMRD is the Basic Structure of Academic Papers (PDF)",
+      "file": "courses/IMRD是學術論文的基本架構.pdf"
+    }
+  ]
+}
+

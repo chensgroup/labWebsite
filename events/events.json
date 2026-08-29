@@ -1,0 +1,43 @@
+[
+  {
+    "year": "2026",
+    "items": [
+      {
+        "date_zh": "1/17（六）",
+        "date_en": "Jan, 17, Sat",
+        "text_zh": "<a href=\"https://www.gyjh.ntpc.edu.tw\" target=\"_blank\" rel=\"noopener\">柑園國中</a>資優課",
+        "text_en": "Lesson for Gifted Class at <a href=\"https://www.gyjh.ntpc.edu.tw\" target=\"_blank\" rel=\"noopener\">Ganyuan Junior High School, New Taipei City</a>"
+      },
+      {
+        "date_zh": "1/24（六）",
+        "date_en": "Jan, 24, Sat",
+        "text_zh": "<a href=\"https://www.fhjh.ntpc.edu.tw\" target=\"_blank\" rel=\"noopener\">福和國中</a>資優演講",
+        "text_en": "Lecture for Gifted Class at <a href=\"https://www.fhjh.ntpc.edu.tw\" target=\"_blank\" rel=\"noopener\">Fuhe Junior High School, New Taipei City</a>"
+      },
+      {
+        "date_zh": "1/27（二）",
+        "date_en": "Jan, 27, Tue",
+        "text_zh": "<a href=\"https://www.yphs.ntpc.edu.tw\" target=\"_blank\" rel=\"noopener\">永平高中國中部</a>雙語營",
+        "text_en": "Bilingual Camp at <a href=\"https://www.yphs.ntpc.edu.tw\" target=\"_blank\" rel=\"noopener\">The Junior High School Section of Municipal Yongping High School, New Taipei City</a>"
+      },
+      {
+        "date_zh": "1/30（五）",
+        "date_en": "Jan, 30, Fri",
+        "text_zh": "<a href=\"https://www.ntnu.edu.tw\" target=\"_blank\" rel=\"noopener\">臺師大</a>物理營演講",
+        "text_en": "Lecture for Physics Camp at <a href=\"https://en.ntnu.edu.tw\" target=\"_blank\" rel=\"noopener\">National Taiwan Normal University</a>"
+      }
+    ]
+  },
+  {
+    "year": "2025",
+    "items": [
+      {
+        "date_zh": "12/21（日）",
+        "date_en": "Dec, 21, Sun",
+        "text_zh": "<a href=\"https://waterpark.water.gov.taipei/Default.aspx\" target=\"_blank\" rel=\"noopener\">台北自來水園區</a>聖誕音樂會<a href=\"https://youtube.com/playlist?list=PLqrCD-7Os7PIiINTe9Hiri_9a2MjzY8PC&si=A5cbcu_F5G2dfnsj\" target=\"_blank\" rel=\"noopener\">科普展演</a>",
+        "text_en": "<a href=\"https://youtube.com/playlist?list=PLqrCD-7Os7PIiINTe9Hiri_9a2MjzY8PC&si=A5cbcu_F5G2dfnsj\" target=\"_blank\" rel=\"noopener\">Science Popularization Event</a> in the Christmas Concert at the <a href=\"https://waterparken.water.gov.taipei\" target=\"_blank\" rel=\"noopener\">Taipei Water Park</a>"
+      }
+    ]
+  }
+]
+

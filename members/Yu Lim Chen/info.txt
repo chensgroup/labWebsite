@@ -1,12 +1,26 @@
-name=陳育霖
-labTitle=實驗室主持人
-jobTitle=合聘副教授
-degree=國立臺灣大學 物理系博士, 國立臺灣大學 物理系碩士, 國立臺灣師範大學 地球科學系學士
+# 基本設定 (通用)
+photo=image.avif
 office=S711
-fields=奈米光學, 物理教學, 數理資優教育
-expertise=臺大物理學博士；2013 年 SCI 論文被引用超過 1,600 次；專長奈米光電子學、數理資優教育；110 年臺師大教學優良獎；113 年教育部學術論文獎；2025 與 Ernesto Macaro 發表 EMI 專書論文。
-experience=光電及奈米科學與技術實驗室（PNSTL）, 中央研究院天文暨天文物理研究所（SMA / ALMA）
-phone=02-76543210
-email=chens@uuuu.edu.tw
-website=http://chen.blogspot.com/
-cv=陳育霖，臺大物理學博士，一篇影響指數19.0的國際期刊(SCI) 論文，2013年刊登至今被引用超過1,600次，超過11%是近兩年內引用，是同領域論文引用平均數的120倍，下載超過38,000次，獲選2014超穎材料研究必讀的精選重要論文。另有一篇論文被美國科學促進會(AAAS)等超過30家國際媒體報導[相關報導]。專長奈米光電子學、數理資優教育。同時是長號手、管樂團指揮。曾任教國立臺灣大學物理學系，現任教於國立臺灣師範大學師資培育學院及物理學系，同時擔任臺師大物理雙語課程與國際物理教育(IBDP Physics)國際文憑教師培育(IBEC)協調員及授課教師。110年榮獲臺師大教學優良獎，113年度探究式科學雙語教學論文榮獲教育部領域教材教法研究學術論文獎。2025年與牛津大學Ernesto Macaro共同發表EMI專書論文。
+email=chendaneyl@yahoo.com.tw
+phone=
+website=
+
+# 中文資訊 (ZH)
+name_zh=陳育霖
+labTitle_zh=實驗室主持人
+jobTitle_zh=合聘副教授
+degree_zh=國立臺灣大學 物理系博士
+fields_zh=奈米光學, 物理教學, 數理資優教育
+expertise_zh=奈米電漿子學、探究式教學、自然科學知識論、探究式物理教師培育
+experience_zh=光電及奈米科學與技術實驗室（PNSTL）<br> 中央研究院天文暨天文物理研究所（SMA / ALMA）
+cv_zh=臺大物理學博士，一篇影響指數19.0的國際期刊(SCI) 論文，2013年刊登至今被引用超過1,600次，超過11%是近兩年內引用，是同領域論文引用平均數的120倍，下載超過38,000次，獲選2014超穎材料研究必讀的精選重要論文。另有一篇論文被美國科學促進會(AAAS)等超過30家國際媒體報導[相關報導]。專長奈米光電子學、數理資優教育。同時是長號手、管樂團指揮。曾任教國立臺灣大學物理學系，現任教於國立臺灣師範大學師資培育學院及物理學系，同時擔任臺師大物理雙語課程與國際物理教育(IBDP Physics)國際文憑教師培育(IBEC)協調員及授課教師。110年榮獲臺師大教學優良獎，113年度探究式科學雙語教學論文榮獲教育部領域教材教法研究學術論文獎。2025年與牛津大學Ernesto Macaro共同發表EMI專書論文。
+
+# English Info (EN)
+name_en=Yu Lim Chen
+labTitle_en=Lab Director
+jobTitle_en=Joint Associate Professor
+degree_en=Ph.D., Physics, National Taiwan University
+fields_en=Nanophotonics, Physics Education, Gifted Education in Math & Science
+expertise_en=Nanoplasmonics; inquiry-based pedagogy; nature of science and epistemology; IB Physics teacher education
+experience_en=Photonics & Nanoscience Technology Laboratory (PNSTL)<br>ASIAA Submillimeter Array / ALMA collaboration
+cv_en=Chen Yu Lim, Ph.D. in Physics (National Taiwan University), researches nanophotonics and gifted education. His 2013 paper (impact factor 19.0) boasts over 1,600 citations (11% recent, 120x field average), 38,000+ downloads, and was a 2014 'Must-Read' on metamaterials. AAAS and 30+ media outlets reported another publication. Dr. Chen teaches at National Taiwan Normal University's College of Education and Department of Physics, and coordinates Physics Bilingual Courses & IBDP Physics IBEC. He received the NTNU Excellent Teaching Award (2021) and a Ministry of Education research award (2024). In 2024, he co-authored an EMI book chapter with Ernesto Macaro. He is also a trombone player/conductor.

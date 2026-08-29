@@ -26,22 +26,13 @@
     </nav>
   </header>
   <main>
-    <h2>Course Info<span style="font-size: 14px; vertical-align: middle;"><br>Click on a course to view details</span>
-    </h2>
-    <div class="photo-grid">
-      <a class="course-button person-card" href="javascript:void(0);" data-name="Physics Pedagogy"><strong>Physics Pedagogy</strong></a>
-      <a class="course-button person-card" href="javascript:void(0);" data-name="Physics Teaching Practicum"><strong>Physics Teaching Practicum</strong></a>
-      <a class="course-button person-card" href="javascript:void(0);" data-name="Inquiry and Practice in Natural Sciences"><strong>Inquiry and Practice in Natural Sciences</strong></a>
-      <a class="course-button person-card" href="javascript:void(0);" data-name="Introduction to Natural Sciences (Elementary)"><strong>Introduction to Natural Sciences (Elementary)</strong></a>
-    </div>
-    <h2>Past Courses<span style="font-size: 14px; vertical-align: middle;"><br>Click on a course to view details</span>
-    </h2>
+    <h2>Course Info<span style="font-size: 14px; vertical-align: middle;"><br>Click on a course to view details</span></h2>
+    <div class="photo-grid" id="active-courses-grid"></div>
+    <h2>Past Courses<span style="font-size: 14px; vertical-align: middle;"><br>Click on a course to view details</span></h2>
+    <div class="photo-grid" id="past-courses-grid"></div>
+    <h3 id="past-courses-placeholder">No past courses.</h3>
     <h2>Course Handouts</h2>
-    <p>
-      <a href="courses/IMRD是學術論文的基本架構.pdf" target="_blank">
-        📄 IMRD is the Basic Structure of Academic Papers (PDF)
-      </a>
-    </p>
+    <div id="handouts-container"></div>
   </main>
   <div class="modal" id="profile-modal" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="modal__panel">

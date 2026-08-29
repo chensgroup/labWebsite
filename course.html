@@ -27,19 +27,12 @@
   </header>
   <main>
     <h2>課程資訊<span style="font-size: 14px; vertical-align: middle;"><br>點擊課程以檢視詳細資訊</span></h2>
-    <div class="photo-grid">
-      <a class="course-button person-card" href="javascript:void(0);" data-name="物理教材教法"><strong>物理教材教法</strong></a>
-      <a class="course-button person-card" href="javascript:void(0);" data-name="物理教學實習"><strong>物理教學實習</strong></a>
-      <a class="course-button person-card" href="javascript:void(0);" data-name="自然領域探究與實作"><strong>自然領域探究與實作</strong></a>
-      <a class="course-button person-card" href="javascript:void(0);" data-name="自然科學領域概論（小教）"><strong>自然科學領域概論（小教）</strong></a>
-    </div>
+    <div class="photo-grid" id="active-courses-grid"></div>
     <h2>舊有課程<span style="font-size: 14px; vertical-align: middle;"><br>點擊課程以檢視詳細資訊</span></h2>
+    <div class="photo-grid" id="past-courses-grid"></div>
+    <h3 id="past-courses-placeholder">暫無舊有課程</h3>
     <h2>課程講義</h2>
-    <p>
-      <a href="courses/IMRD是學術論文的基本架構.pdf" target="_blank">
-        📄 IMRD 是學術論文的基本架構（PDF）
-      </a>
-    </p>
+    <div id="handouts-container"></div>
   </main>
   <div class="modal" id="profile-modal" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="modal__panel">

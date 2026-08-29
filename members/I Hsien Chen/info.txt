@@ -1,0 +1,23 @@
+# 基本設定 (通用)
+photo=image.avif
+office=S719
+email=nderson104225@gmail.com
+phone=(+886)961-577-592
+website=
+
+# 中文資訊 (ZH)
+name_zh=陳苡銜
+labTitle_zh=師大物理教育團隊<br>YouTube總編輯
+jobTitle_zh=碩士二年級
+degree_zh=國立臺灣師範大學 物理學系學士
+fields_zh=物理教育、AI在物理上的應用
+experience_zh=日本九州大學 綜合理工學院 在學中
+
+# English Info (EN)
+name_en=I Hsien Chen
+labTitle_en=Chief Editor of YouTube Channel,<br>NTNU Physics Education Team
+jobTitle_en=Second Year in the Master Program
+degree_en=Bachelor, Physics, National Taiwan Normal University
+fields_en=Physics Education, Application of AI in Physics
+experience_en=Student of Interdisciplinary Graduate School of Engineering Science, Kyushu University
+

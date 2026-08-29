@@ -1,0 +1,119 @@
+{
+  "recommendedSites": [
+    {
+      "title_zh": "冒牌自然老師",
+      "title_en": "Counterfeit Science Teacher",
+      "url": "https://chendaneyl.blogspot.com/"
+    },
+    {
+      "title_zh": "師大物理系",
+      "title_en": "Department of Physics, National Taiwan Normal University",
+      "url": "https://www2.phy.ntnu.edu.tw/"
+    }
+  ],
+  "physicsUnits": [
+    {
+      "name_zh": "力學一",
+      "name_en": "Mechanics I",
+      "options_zh": [
+        "量測",
+        "直線運動",
+        "平面運動",
+        "牛頓運動定律",
+        "週期性運動",
+        "萬有引力"
+      ],
+      "options_en": [
+        "Measurement",
+        "Linear Motion",
+        "Planar Motion",
+        "Newton's Laws of Motion",
+        "Periodic Motion",
+        "Universal Gravitation"
+      ]
+    },
+    {
+      "name_zh": "力學二、熱學",
+      "name_en": "Mechanics II & Thermodynamics",
+      "options_zh": [
+        "力平衡與力矩",
+        "質心與動量",
+        "功與能量",
+        "碰撞",
+        "熱學"
+      ],
+      "options_en": [
+        "Force Equilibrium & Torque",
+        "Center of Mass & Momentum",
+        "Work & Energy",
+        "Collision",
+        "Thermodynamics"
+      ]
+    },
+    {
+      "name_zh": "波動、光及聲音",
+      "name_en": "Waves, Light & Sound",
+      "options_zh": [
+        "波的性質、疊加原理",
+        "駐波、惠更斯定理",
+        "聲波的傳播、共鳴",
+        "幾何光學(反射、折射、透鏡)",
+        "物理光學(波動說、干涉、繞射)"
+      ],
+      "options_en": [
+        "Wave Properties & Superposition",
+        "Standing Waves & Huygens' Principle",
+        "Sound Propagation & Resonance",
+        "Geometric Optics (Reflection, Refraction, Lens)",
+        "Physical Optics (Wave Theory, Interference, Diffraction)"
+      ]
+    },
+    {
+      "name_zh": "電磁現象一",
+      "name_en": "Electromagnetic Phenomena I",
+      "options_zh": [
+        "靜電學(庫倫定律)",
+        "電場、電位能、電位及電位差",
+        "電流磁效應、導線在磁場中受力",
+        "帶電質點在磁場中的運動、勞侖茲力",
+        "電磁感應、冷次定律"
+      ],
+      "options_en": [
+        "Electrostatics (Coulomb's Law)",
+        "Electric Field, Potential Energy & Potential Difference",
+        "Magnetic Effects of Electric Current",
+        "Motion of Charged Particles & Lorentz Force",
+        "Electromagnetic Induction & Lenz's Law"
+      ]
+    },
+    {
+      "name_zh": "電磁現象二、量子現象",
+      "name_en": "Electromagnetic Phenomena II & Quantum Phenomena",
+      "options_zh": [
+        "電流、電阻與歐姆定律",
+        "量子論：黑體輻射、光電效應",
+        "原子結構與原子核",
+        "氫原子光譜與能階、物質波"
+      ],
+      "options_en": [
+        "Current, Resistance & Ohm's Law",
+        "Quantum Theory: Blackbody Radiation & Photoelectric Effect",
+        "Atomic Structure & Atomic Nucleus",
+        "Hydrogen Spectrum, Energy Levels & Matter Waves"
+      ]
+    }
+  ],
+  "otherResources": [
+    {
+      "title_zh": "板書撰寫教學",
+      "title_en": "Board Writing Tutorial",
+      "url": "https://www.youtube.com/watch?v=YPD-mLYH8ks"
+    },
+    {
+      "title_zh": "探究式教學",
+      "title_en": "Inquiry-Based Teaching",
+      "url": "https://www.youtube.com/watch?v=dlJQX9mbobo"
+    }
+  ]
+}
+

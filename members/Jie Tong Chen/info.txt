@@ -1,0 +1,23 @@
+# 基本設定 (通用)
+photo=image.avif
+office=S719
+email=t568@nhjh.tp.edu.tw
+phone=(+886)938-663-269
+website=
+
+# 中文資訊 (ZH)
+name_zh=陳玠同
+labTitle_zh=國立臺灣師範大學<br>自然領域教學研究中心助理
+jobTitle_zh=國立臺灣師範大學自然領域教學研究中心助理
+degree_zh=國立臺灣師範大學物理系碩士
+fields_zh=物理
+experience_zh=台北市立內湖國民中學數理資優班教師
+
+# English Info (EN)
+name_en=Jie Tong Chen
+labTitle_en=Assistant of Science Education Center,<br>NTNU
+jobTitle_en=Assistant of Science Education Center, NTNU
+degree_en=Master, Physics, National Taiwan Normal University
+fields_en=Physics
+experience_en=Teacher of Mathematics and Physics Gifted Class in Taipei Municipal Nei-Hu Junior High School
+
